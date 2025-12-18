@@ -120,6 +120,7 @@ button{
 
 <script>
 const API = "https://s77-backend.onrender.com";
+const API_KEY = "S77-PRIVATE-2025";
 
 let ultimos=[];
 let adminClave=null;
@@ -130,7 +131,10 @@ async function login(){
   const clave=document.getElementById("clave").value;
   const r=await fetch(API+"/login",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key": API_KEY
+    },
     body:JSON.stringify({clave})
   });
   const d=await r.json();
@@ -151,7 +155,10 @@ async function crearUsuario(){
   const dias=document.getElementById("dias").value;
   await fetch(API+"/crear-usuario",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key": API_KEY
+    },
     body:JSON.stringify({adminClave,nuevaClave,dias})
   });
   alert("Usuario creado");
@@ -165,7 +172,10 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   render();
   const r=await fetch(API+"/calcular",{
     method:"POST",
-    headers:{"Content-Type":"application/json"},
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key": API_KEY
+    },
     body:JSON.stringify({ultimos})
   });
   const d=await r.json();
