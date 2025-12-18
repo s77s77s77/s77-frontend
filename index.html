@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema Premium S77</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  background:black;
+  color:#fff;
+  text-align:center;
+  padding:20px;
+}
+.panel{
+  max-width:480px;
+  margin:15px auto;
+  padding:15px;
+  border-radius:12px;
+  background:black;
+}
+.hidden{display:none}
+input,select,button{
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin:5px;
+}
+button{
+  background:maroon;
+  color:white;
+  font-weight:bold;
+}
+.inputs{
+  display:grid;
+  grid-template-columns:repeat(4,70px);
+  gap:12px;
+  justify-content:center;
+}
+.inputs input{
+  width:70px;height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  background:white;
+  color:black;
+}
+.inputs input:first-child{background:#7fd3ff;}
+.nuevo{
+  width:70px;height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  background:#7fd3ff;
+}
+.favoritos{
+  background:green;
+  font-size:26px;
+  padding:15px;
+  border-radius:8px;
+}
+.explosivos{
+  background:red;
+  font-size:48px;
+  padding:15px;
+  border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎡 Sistema Premium S77</h1>
+
+<!-- LOGIN -->
+<div class="panel" id="login">
+  <h2>INGRESAR CLAVE</h2>
+  <input id="clave">
+  <br>
+  <button onclick="login()">INGRESAR</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- ADMIN -->
+<div class="panel hidden" id="admin">
+  <h2>ADMINISTRADOR</h2>
+  <input id="nuevaClave" placeholder="Clave usuario">
+  <select id="dias">
+    <option value="1">1 día</option>
+    <option value="7">7 días</option>
+    <option value="30">30 días</option>
+  </select>
+  <br>
+  <button onclick="crearUsuario()">CREAR USUARIO</button>
+</div>
+
+<!-- S77 -->
+<div class="panel hidden" id="s77">
+  <h2>ÚLTIMOS 16 NÚMEROS</h2>
+  <div class="inputs">
+    <input disabled><input disabled><input disabled><input disabled>
+    <input disabled><input disabled><input disabled><input disabled>
+    <input disabled><input disabled><input disabled><input disabled>
+    <input disabled><input disabled><input disabled><input disabled>
+  </div>
+
+  <h3>NUEVO NÚMERO</h3>
+  <input class="nuevo" id="nuevoNumero" type="number">
+  <br>
+  <button onclick="reiniciar()">REINICIAR</button>
+
+  <h3>FAVORITOS</h3>
+  <div class="favoritos" id="fav">—</div>
+
+  <h3>EXPLOSIVOS</h3>
+  <div class="explosivos" id="exp">—</div>
+</div>
+
+<script>
+const API = "https://s77-backend.onrender.com";
+
+let ultimos=[];
+let adminClave=null;
+
+const cas=[...document.querySelectorAll(".inputs input")];
+
+async function login(){
+  const clave=document.getElementById("clave").value;
+  const r=await fetch(API+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({clave})
+  });
+  const d=await r.json();
+  if(!d.ok){
+    document.getElementById("error").innerText=d.error;
+    return;
+  }
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
+  if(d.admin){
+    adminClave=clave;
+    document.getElementById("admin").classList.remove("hidden");
+  }
+}
+
+async function crearUsuario(){
+  const nuevaClave=document.getElementById("nuevaClave").value;
+  const dias=document.getElementById("dias").value;
+  await fetch(API+"/crear-usuario",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({adminClave,nuevaClave,dias})
+  });
+  alert("Usuario creado");
+}
+
+document.getElementById("nuevoNumero").onchange=async e=>{
+  const v=parseInt(e.target.value);
+  if(isNaN(v))return;
+  ultimos.unshift(v);
+  if(ultimos.length>16)ultimos.pop();
+  render();
+  const r=await fetch(API+"/calcular",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ultimos})
+  });
+  const d=await r.json();
+  document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
+  document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
+  e.target.value="";
+};
+
+function render(){
+  cas.forEach((c,i)=>c.value=ultimos[i]??"");
+}
+function reiniciar(){
+  ultimos=[];
+  render();
+  fav.innerText="—";
+  exp.innerText="—";
+}
+</script>
+
+</body>
+</html>
