@@ -120,78 +120,90 @@ button{
 
 <script>
 const API = "https://s77-backend.onrender.com";
-const API_KEY = "S77-PRIVATE-2025";
 
-let ultimos=[];
-let adminClave=null;
+let ultimos = [];
+let adminClave = null;
 
-const cas=[...document.querySelectorAll(".inputs input")];
+const cas = [...document.querySelectorAll(".inputs input")];
 
 async function login(){
-  const clave=document.getElementById("clave").value;
-  const r=await fetch(API+"/login",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-api-key": API_KEY
+  const clave = document.getElementById("clave").value;
+
+  const r = await fetch(API + "/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    body:JSON.stringify({clave})
+    body: JSON.stringify({ clave })
   });
-  const d=await r.json();
-  if(!d.ok){
-    document.getElementById("error").innerText=d.error;
+
+  const d = await r.json();
+
+  if (!d.ok) {
+    document.getElementById("error").innerText = d.error || "FORBIDDEN";
     return;
   }
+
   document.getElementById("login").classList.add("hidden");
   document.getElementById("s77").classList.remove("hidden");
-  if(d.admin){
-    adminClave=clave;
+
+  if (d.admin) {
+    adminClave = clave;
     document.getElementById("admin").classList.remove("hidden");
   }
 }
 
 async function crearUsuario(){
-  const nuevaClave=document.getElementById("nuevaClave").value;
-  const dias=document.getElementById("dias").value;
-  await fetch(API+"/crear-usuario",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-api-key": API_KEY
+  const nuevaClave = document.getElementById("nuevaClave").value;
+  const dias = document.getElementById("dias").value;
+
+  await fetch(API + "/crear-usuario", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    body:JSON.stringify({adminClave,nuevaClave,dias})
+    body: JSON.stringify({ adminClave, nuevaClave, dias })
   });
+
   alert("Usuario creado");
 }
 
-document.getElementById("nuevoNumero").onchange=async e=>{
-  const v=parseInt(e.target.value);
-  if(isNaN(v))return;
+document.getElementById("nuevoNumero").onchange = async e => {
+  const v = parseInt(e.target.value);
+  if (isNaN(v)) return;
+
   ultimos.unshift(v);
-  if(ultimos.length>16)ultimos.pop();
+  if (ultimos.length > 16) ultimos.pop();
   render();
-  const r=await fetch(API+"/calcular",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-api-key": API_KEY
+
+  const r = await fetch(API + "/calcular", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    body:JSON.stringify({ultimos})
+    body: JSON.stringify({ ultimos })
   });
-  const d=await r.json();
-  document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
-  document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
-  e.target.value="";
+
+  const d = await r.json();
+
+  document.getElementById("fav").innerText =
+    d.favoritos.length ? d.favoritos.join(", ") : "—";
+
+  document.getElementById("exp").innerText =
+    d.explosivos.length ? d.explosivos.join(", ") : "—";
+
+  e.target.value = "";
 };
 
 function render(){
-  cas.forEach((c,i)=>c.value=ultimos[i]??"");
+  cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
 }
+
 function reiniciar(){
-  ultimos=[];
+  ultimos = [];
   render();
-  fav.innerText="—";
-  exp.innerText="—";
+  fav.innerText = "—";
+  exp.innerText = "—";
 }
 </script>
 
