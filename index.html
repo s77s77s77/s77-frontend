@@ -163,19 +163,29 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   document.getElementById("exp").innerText =
     d.explosivos.length ? d.explosivos.join(", ") : "—";
 
-  // 🔒 solo con 16 números
   if(ultimos.length < 16){
     e.target.value="";
     return;
   }
 
-  // TOTAL = cantidad actual
+  // TOTAL actual
   const totalActual = d.favoritos.length + d.explosivos.length;
   document.getElementById("total").value = totalActual;
 
-  // 🔴 GASTOS = acumulado del TOTAL
+  // GASTOS acumulativo
   gastos += totalActual;
   document.getElementById("gastos").value = gastos;
+
+  // DIFERENCIA = negativo de GASTOS
+  let diferencia = -gastos;
+
+  // si se completa lote, sumar positivo fichas*36
+  if(d.completed){
+    const fichas = parseInt(document.getElementById("fichas").value || "1");
+    diferencia += fichas * 36;
+  }
+
+  document.getElementById("diferencia").value = diferencia;
 
   e.target.value="";
 };
@@ -186,11 +196,11 @@ function reiniciar(){
   cas.forEach(c=>c.value="");
   total.value="";
   gastos.value="";
+  diferencia.value="";
   fav.innerText="—";
   exp.innerText="—";
 }
 </script>
 
 </body>
-  </html>
-                                    
+</html>
