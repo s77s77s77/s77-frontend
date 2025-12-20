@@ -19,8 +19,7 @@ body{
   border-radius:12px;
   background:black;
 }
-.hidden{display:none}
-input,select,button{
+input,button{
   padding:10px;
   border-radius:8px;
   border:none;
@@ -55,7 +54,6 @@ button{
   border:4px solid red;
   background:#7fd3ff;
 }
-
 .favoritos{
   background:green;
   font-size:26px;
@@ -67,7 +65,6 @@ button{
   font-size:48px;
   padding:15px;
   border-radius:8px;
-  animation:pulse 0.8s ease-in-out;
 }
 
 .box input{
@@ -79,34 +76,10 @@ button{
   font-family:"Segoe UI",Arial,sans-serif;
 }
 
-#gasto{
-  background:black;
-  color:red;
-}
-#diferencia{
-  background:black;
-  color:#6ecbff;
-  font-family:"Segoe UI",Arial,sans-serif;
-}
-#fichas{
-  background:black;
-  color:#00ff66;
-  font-family:"Segoe UI",Arial,sans-serif;
-}
-#total{
-  background:#666;
-  color:white;
-}
-
-.pulse{
-  animation:pulse 0.6s ease-in-out;
-}
-
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.15)}
-  100%{transform:scale(1)}
-}
+#total{background:#666;color:white;}
+#fichas{background:black;color:#00ff66;}
+#gastos{background:black;color:red;}
+#diferencia{background:red;color:black;}
 </style>
 </head>
 
@@ -114,7 +87,7 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<div class="panel hidden" id="s77">
+<div class="panel">
 
 <h2>ÚLTIMOS 16 NÚMEROS</h2>
 <div class="inputs">
@@ -129,8 +102,8 @@ button{
 <div style="display:flex;justify-content:center;gap:20px;align-items:flex-start;">
 
   <div class="box">
-    <strong>GASTO</strong><br>
-    <input id="gasto" disabled><br><br>
+    <strong>GASTOS</strong><br>
+    <input id="gastos" disabled><br><br>
     <strong>DIFERENCIA</strong><br>
     <input id="diferencia" disabled>
   </div>
@@ -158,16 +131,15 @@ button{
 </div>
 
 <script>
-const API = "https://s77-backend.onrender.com";
+const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
-let total=0;
-let gasto=0;
+let totalIngreso=0;
+let totalAcum=0;
+let gastos=0;
 let diferencia=0;
 
 const cas=[...document.querySelectorAll(".inputs input")];
-
-document.getElementById("s77").classList.remove("hidden");
 
 document.getElementById("nuevoNumero").onchange=async e=>{
   const v=parseInt(e.target.value);
@@ -192,26 +164,43 @@ document.getElementById("nuevoNumero").onchange=async e=>{
     return;
   }
 
+  // TOTAL del ingreso
+  totalIngreso=d.favoritos.length+d.explosivos.length;
+  totalAcum+=totalIngreso;
+
+  // GASTOS acumula TOTAL del ingreso
+  gastos+=totalIngreso;
+
+  // FICHAS
+  const fichas=1+Math.floor(totalAcum/25);
+
+  // DIFERENCIA
   if(d.completed){
-    total=0;
-    gasto=0;
+    diferencia=(fichas*36)-gastos;
+  }else{
+    diferencia=-gastos;
   }
 
-  const cantidad=d.favoritos.length+d.explosivos.length;
-  total+=cantidad;
-  gasto+=total;
+  // colores diferencia
+  const diffBox=document.getElementById("diferencia");
+  if(diferencia>=0){
+    diffBox.style.background="#6ecbff";
+    diffBox.style.color="black";
+  }else{
+    diffBox.style.background="red";
+    diffBox.style.color="black";
+  }
 
-  const fichas=1+Math.floor(total/25);
-  diferencia=(fichas*36)-gasto;
-
-  document.getElementById("total").value=total;
-  document.getElementById("gasto").value=gasto;
+  document.getElementById("total").value=totalIngreso;
+  document.getElementById("gastos").value=gastos;
   document.getElementById("fichas").value=fichas;
   document.getElementById("diferencia").value=diferencia;
 
-  document.getElementById("fichas").classList.remove("pulse");
-  void document.getElementById("fichas").offsetWidth;
-  document.getElementById("fichas").classList.add("pulse");
+  if(d.completed){
+    totalIngreso=0;
+    totalAcum=0;
+    gastos=0;
+  }
 
   e.target.value="";
 };
@@ -219,15 +208,16 @@ document.getElementById("nuevoNumero").onchange=async e=>{
 function reiniciar(){
   ultimos=[];
   cas.forEach(c=>c.value="");
-  total=0;
-  gasto=0;
+  totalIngreso=0;
+  totalAcum=0;
+  gastos=0;
   diferencia=0;
-  total.value=gasto.value=fichas.value=diferencia.value="";
+  total.value=gastos.value=fichas.value=diferencia.value="";
   fav.innerText="—";
   exp.innerText="—";
 }
 </script>
 
 </body>
-      </html>
-                            
+  </html>
+  
