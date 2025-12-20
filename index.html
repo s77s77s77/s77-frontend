@@ -171,9 +171,10 @@ const API="https://s77-backend.onrender.com";
 let ultimos=[];
 let adminClave=null;
 
-let gastos=0;
-let diferencia=0;
-let totalAcumParaFichas=0;
+// acumuladores
+let gastos=0;        // suma acumulativa del TOTAL
+let diferencia=0;    // acumulador independiente
+let totalAcum=0;     // solo para calcular fichas
 
 const cas=[...document.querySelectorAll(".inputs input")];
 
@@ -228,30 +229,36 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
   document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
 
+  // activar solo con 16
   if(ultimos.length<16){
     e.target.value="";
     return;
   }
 
-  const totalIngreso=d.favoritos.length+d.explosivos.length;
-  document.getElementById("total").value=totalIngreso;
+  // TOTAL del ingreso (cantidad)
+  const totalIngreso = d.favoritos.length + d.explosivos.length;
+  document.getElementById("total").value = totalIngreso;
 
-  gastos+=totalIngreso;
-  diferencia=-gastos;
+  // GASTOS acumula TOTAL
+  gastos += totalIngreso;
+  document.getElementById("gastos").value = gastos;
 
-  totalAcumParaFichas+=totalIngreso;
-  const fichas=1+Math.floor(totalAcumParaFichas/25);
+  // DIFERENCIA siempre absorbe el gasto (negativo)
+  diferencia -= totalIngreso;
 
+  // FICHAS
+  totalAcum += totalIngreso;
+  const fichas = 1 + Math.floor(totalAcum / 25);
+  document.getElementById("fichas").value = fichas;
+
+  // al completar lote, sumar positivo de fichas*36 y resetear GASTOS y totalAcum
   if(d.completed){
-    diferencia+=fichas*36;
-    totalAcumParaFichas=0;
-    gastos=0;
+    diferencia += (fichas * 36);
+    gastos = 0;
+    totalAcum = 0;
   }
 
-  document.getElementById("gastos").value=gastos;
-  document.getElementById("fichas").value=fichas;
-  document.getElementById("diferencia").value=diferencia;
-
+  // colores diferencia
   const diff=document.getElementById("diferencia");
   if(diferencia>=0){
     diff.style.background="#6ecbff";
@@ -260,7 +267,9 @@ document.getElementById("nuevoNumero").onchange=async e=>{
     diff.style.background="red";
     diff.style.color="black";
   }
+  diff.value = diferencia;
 
+  // pulsión fichas
   const f=document.getElementById("fichas");
   f.classList.remove("pulse"); void f.offsetWidth; f.classList.add("pulse");
 
@@ -272,7 +281,7 @@ function reiniciar(){
   cas.forEach(c=>c.value="");
   gastos=0;
   diferencia=0;
-  totalAcumParaFichas=0;
+  totalAcum=0;
   total.value=gastos.value=fichas.value=diferencia.value="";
   fav.innerText="—";
   exp.innerText="—";
@@ -280,5 +289,5 @@ function reiniciar(){
 </script>
 
 </body>
-  </html>
-                                  
+                                    </html>
+                                      
