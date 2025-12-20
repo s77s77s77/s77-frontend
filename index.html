@@ -13,7 +13,7 @@ body{
   padding:20px;
 }
 .panel{
-  max-width:480px;
+  max-width:520px;
   margin:15px auto;
   padding:15px;
   border-radius:12px;
@@ -67,8 +67,8 @@ button{
   padding:15px;
   border-radius:8px;
 }
-.totalBox input{
-  width:80px;
+.box input{
+  width:90px;
   height:50px;
   font-size:28px;
   text-align:center;
@@ -106,6 +106,7 @@ button{
 <!-- S77 -->
 <div class="panel hidden" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
+
   <div class="inputs">
     <input disabled><input disabled><input disabled><input disabled>
     <input disabled><input disabled><input disabled><input disabled>
@@ -116,19 +117,32 @@ button{
   <h3>NUEVO NÚMERO</h3>
 
   <div style="display:flex; justify-content:center; gap:20px; align-items:flex-start;">
+
+    <!-- GASTO / DIFERENCIA -->
+    <div class="box">
+      <div><strong>GASTO</strong></div>
+      <input id="gasto" disabled>
+      <br><br>
+      <div><strong>DIFERENCIA</strong></div>
+      <input id="diferencia" disabled>
+    </div>
+
+    <!-- NUEVO NUMERO -->
     <div>
       <input class="nuevo" id="nuevoNumero" type="number">
       <br>
       <button onclick="reiniciar()">REINICIAR</button>
     </div>
 
-    <div class="totalBox">
+    <!-- TOTAL / FICHAS -->
+    <div class="box">
       <div><strong>TOTAL</strong></div>
       <input id="total" disabled>
       <br><br>
       <div><strong>FICHAS</strong></div>
       <input id="fichas" disabled>
     </div>
+
   </div>
 
   <h3>FAVORITOS</h3>
@@ -143,7 +157,10 @@ const API = "https://s77-backend.onrender.com";
 
 let ultimos = [];
 let adminClave = null;
+
 let totalAcumulado = 0;
+let gastoAcumulado = 0;
+let diferenciaAcumulada = 0;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 
@@ -201,14 +218,33 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   const d = await r.json();
 
+  // Reinicio por lote completado
   if (d.completed) {
     totalAcumulado = 0;
+    gastoAcumulado = 0;
+    diferenciaAcumulada = 0;
   }
 
-  totalAcumulado += d.favoritos.length + d.explosivos.length;
+  const cantidadActual = d.favoritos.length + d.explosivos.length;
 
+  // TOTAL
+  totalAcumulado += cantidadActual;
+
+  // GASTO
+  gastoAcumulado += cantidadActual;
+
+  // FICHAS (1 cada 25)
+  const fichas = 1 + Math.floor(totalAcumulado / 25);
+
+  // DIFERENCIA acumulativa
+  const diferenciaActual = (fichas * 36) - gastoAcumulado;
+  diferenciaAcumulada += diferenciaActual;
+
+  // Mostrar valores
   document.getElementById("total").value = totalAcumulado;
-  document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
+  document.getElementById("fichas").value = fichas;
+  document.getElementById("gasto").value = gastoAcumulado;
+  document.getElementById("diferencia").value = diferenciaAcumulada;
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -226,14 +262,21 @@ function render(){
 function reiniciar(){
   ultimos = [];
   render();
-  fav.innerText = "—";
-  exp.innerText = "—";
+
   totalAcumulado = 0;
+  gastoAcumulado = 0;
+  diferenciaAcumulada = 0;
+
   document.getElementById("total").value = "";
   document.getElementById("fichas").value = "";
+  document.getElementById("gasto").value = "";
+  document.getElementById("diferencia").value = "";
+
+  fav.innerText = "—";
+  exp.innerText = "—";
 }
 </script>
 
 </body>
-    </html>
+        </html>
   
