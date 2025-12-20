@@ -13,7 +13,7 @@ body{
   padding:20px;
 }
 .panel{
-  max-width:520px;
+  max-width:560px;
   margin:15px auto;
   padding:15px;
   border-radius:12px;
@@ -55,6 +55,7 @@ button{
   border:4px solid red;
   background:#7fd3ff;
 }
+
 .favoritos{
   background:green;
   font-size:26px;
@@ -66,13 +67,45 @@ button{
   font-size:48px;
   padding:15px;
   border-radius:8px;
+  animation:pulse 0.8s ease-in-out;
 }
+
 .box input{
-  width:90px;
-  height:50px;
+  width:95px;
+  height:52px;
   font-size:28px;
   text-align:center;
   border-radius:8px;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+
+#gasto{
+  background:black;
+  color:red;
+}
+#diferencia{
+  background:black;
+  color:#6ecbff;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+#fichas{
+  background:black;
+  color:#00ff66;
+  font-family:"Segoe UI",Arial,sans-serif;
+}
+#total{
+  background:#666;
+  color:white;
+}
+
+.pulse{
+  animation:pulse 0.6s ease-in-out;
+}
+
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.15)}
+  100%{transform:scale(1)}
 }
 </style>
 </head>
@@ -81,202 +114,120 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- LOGIN -->
-<div class="panel" id="login">
-  <h2>INGRESAR CLAVE</h2>
-  <input id="clave">
-  <br>
-  <button onclick="login()">INGRESAR</button>
-  <p id="error" style="color:red;"></p>
-</div>
-
-<!-- ADMIN -->
-<div class="panel hidden" id="admin">
-  <h2>ADMINISTRADOR</h2>
-  <input id="nuevaClave" placeholder="Clave usuario">
-  <select id="dias">
-    <option value="1">1 día</option>
-    <option value="7">7 días</option>
-    <option value="30">30 días</option>
-  </select>
-  <br>
-  <button onclick="crearUsuario()">CREAR USUARIO</button>
-</div>
-
-<!-- S77 -->
 <div class="panel hidden" id="s77">
-  <h2>ÚLTIMOS 16 NÚMEROS</h2>
 
-  <div class="inputs">
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
+<h2>ÚLTIMOS 16 NÚMEROS</h2>
+<div class="inputs">
+  <input disabled><input disabled><input disabled><input disabled>
+  <input disabled><input disabled><input disabled><input disabled>
+  <input disabled><input disabled><input disabled><input disabled>
+  <input disabled><input disabled><input disabled><input disabled>
+</div>
+
+<h3>NUEVO NÚMERO</h3>
+
+<div style="display:flex;justify-content:center;gap:20px;align-items:flex-start;">
+
+  <div class="box">
+    <strong>GASTO</strong><br>
+    <input id="gasto" disabled><br><br>
+    <strong>DIFERENCIA</strong><br>
+    <input id="diferencia" disabled>
   </div>
 
-  <h3>NUEVO NÚMERO</h3>
-
-  <div style="display:flex; justify-content:center; gap:20px; align-items:flex-start;">
-
-    <!-- GASTO / DIFERENCIA -->
-    <div class="box">
-      <div><strong>GASTO</strong></div>
-      <input id="gasto" disabled>
-      <br><br>
-      <div><strong>DIFERENCIA</strong></div>
-      <input id="diferencia" disabled>
-    </div>
-
-    <!-- NUEVO NUMERO -->
-    <div>
-      <input class="nuevo" id="nuevoNumero" type="number">
-      <br>
-      <button onclick="reiniciar()">REINICIAR</button>
-    </div>
-
-    <!-- TOTAL / FICHAS -->
-    <div class="box">
-      <div><strong>TOTAL</strong></div>
-      <input id="total" disabled>
-      <br><br>
-      <div><strong>FICHAS</strong></div>
-      <input id="fichas" disabled>
-    </div>
-
+  <div>
+    <input class="nuevo" id="nuevoNumero" type="number"><br>
+    <button onclick="reiniciar()">REINICIAR</button>
   </div>
 
-  <h3>FAVORITOS</h3>
-  <div class="favoritos" id="fav">—</div>
+  <div class="box">
+    <strong>TOTAL</strong><br>
+    <input id="total" disabled><br><br>
+    <strong>FICHAS</strong><br>
+    <input id="fichas" disabled>
+  </div>
 
-  <h3>EXPLOSIVOS</h3>
-  <div class="explosivos" id="exp">—</div>
+</div>
+
+<h3>FAVORITOS</h3>
+<div class="favoritos" id="fav">—</div>
+
+<h3>EXPLOSIVOS</h3>
+<div class="explosivos" id="exp">—</div>
+
 </div>
 
 <script>
 const API = "https://s77-backend.onrender.com";
 
-let ultimos = [];
-let adminClave = null;
+let ultimos=[];
+let total=0;
+let gasto=0;
+let diferencia=0;
 
-let totalAcumulado = 0;
-let gastoAcumulado = 0;
-let diferenciaAcumulada = 0;
+const cas=[...document.querySelectorAll(".inputs input")];
 
-const cas = [...document.querySelectorAll(".inputs input")];
+document.getElementById("s77").classList.remove("hidden");
 
-async function login(){
-  const clave = document.getElementById("clave").value;
+document.getElementById("nuevoNumero").onchange=async e=>{
+  const v=parseInt(e.target.value);
+  if(isNaN(v))return;
 
-  const r = await fetch(API + "/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ clave })
+  ultimos.unshift(v);
+  if(ultimos.length>16)ultimos.pop();
+  cas.forEach((c,i)=>c.value=ultimos[i]??"");
+
+  const r=await fetch(API+"/calcular",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ultimos})
   });
+  const d=await r.json();
 
-  const d = await r.json();
+  document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
+  document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
 
-  if (!d.ok) {
-    document.getElementById("error").innerText = d.error || "FORBIDDEN";
+  if(ultimos.length<16){
+    e.target.value="";
     return;
   }
 
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
-
-  if (d.admin) {
-    adminClave = clave;
-    document.getElementById("admin").classList.remove("hidden");
-  }
-}
-
-async function crearUsuario(){
-  const nuevaClave = document.getElementById("nuevaClave").value;
-  const dias = document.getElementById("dias").value;
-
-  await fetch(API + "/crear-usuario", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ adminClave, nuevaClave, dias })
-  });
-
-  alert("Usuario creado");
-}
-
-document.getElementById("nuevoNumero").onchange = async e => {
-  const v = parseInt(e.target.value);
-  if (isNaN(v)) return;
-
-  ultimos.unshift(v);
-  if (ultimos.length > 16) ultimos.pop();
-  render();
-
-  const r = await fetch(API + "/calcular", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ultimos })
-  });
-
-  const d = await r.json();
-
-  // Reinicio por lote completado
-  if (d.completed) {
-    totalAcumulado = 0;
-    gastoAcumulado = 0;
-    diferenciaAcumulada = 0;
+  if(d.completed){
+    total=0;
+    gasto=0;
   }
 
-  const cantidadActual = d.favoritos.length + d.explosivos.length;
+  const cantidad=d.favoritos.length+d.explosivos.length;
+  total+=cantidad;
+  gasto+=total;
 
-  // TOTAL
-  totalAcumulado += cantidadActual;
+  const fichas=1+Math.floor(total/25);
+  diferencia=(fichas*36)-gasto;
 
-  // GASTO
-  gastoAcumulado += cantidadActual;
+  document.getElementById("total").value=total;
+  document.getElementById("gasto").value=gasto;
+  document.getElementById("fichas").value=fichas;
+  document.getElementById("diferencia").value=diferencia;
 
-  // FICHAS (1 cada 25)
-  const fichas = 1 + Math.floor(totalAcumulado / 25);
+  document.getElementById("fichas").classList.remove("pulse");
+  void document.getElementById("fichas").offsetWidth;
+  document.getElementById("fichas").classList.add("pulse");
 
-  // DIFERENCIA acumulativa
-  const diferenciaActual = (fichas * 36) - gastoAcumulado;
-  diferenciaAcumulada += diferenciaActual;
-
-  // Mostrar valores
-  document.getElementById("total").value = totalAcumulado;
-  document.getElementById("fichas").value = fichas;
-  document.getElementById("gasto").value = gastoAcumulado;
-  document.getElementById("diferencia").value = diferenciaAcumulada;
-
-  document.getElementById("fav").innerText =
-    d.favoritos.length ? d.favoritos.join(", ") : "—";
-
-  document.getElementById("exp").innerText =
-    d.explosivos.length ? d.explosivos.join(", ") : "—";
-
-  e.target.value = "";
+  e.target.value="";
 };
 
-function render(){
-  cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
-}
-
 function reiniciar(){
-  ultimos = [];
-  render();
-
-  totalAcumulado = 0;
-  gastoAcumulado = 0;
-  diferenciaAcumulada = 0;
-
-  document.getElementById("total").value = "";
-  document.getElementById("fichas").value = "";
-  document.getElementById("gasto").value = "";
-  document.getElementById("diferencia").value = "";
-
-  fav.innerText = "—";
-  exp.innerText = "—";
+  ultimos=[];
+  cas.forEach(c=>c.value="");
+  total=0;
+  gasto=0;
+  diferencia=0;
+  total.value=gasto.value=fichas.value=diferencia.value="";
+  fav.innerText="—";
+  exp.innerText="—";
 }
 </script>
 
 </body>
-        </html>
-  
+      </html>
+                            
