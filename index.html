@@ -82,16 +82,9 @@ button{
 }
 
 #total{background:#666;color:white;}
-#fichas{background:black;color:#00ff66;}
 #gastos{background:black;color:red;}
+#fichas{background:black;color:#00ff66;}
 #diferencia{background:red;color:black;}
-
-.pulse{animation:pulse .6s ease-in-out;}
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.15)}
-  100%{transform:scale(1)}
-}
 </style>
 </head>
 
@@ -99,30 +92,7 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- LOGIN -->
-<div class="panel" id="login">
-  <h2>INGRESAR CLAVE</h2>
-  <input id="clave">
-  <br>
-  <button onclick="login()">INGRESAR</button>
-  <p id="error" style="color:red;"></p>
-</div>
-
-<!-- ADMIN -->
-<div class="panel hidden" id="admin">
-  <h2>ADMINISTRADOR</h2>
-  <input id="nuevaClave" placeholder="Clave usuario">
-  <select id="dias">
-    <option value="1">1 día</option>
-    <option value="7">7 días</option>
-    <option value="30">30 días</option>
-  </select>
-  <br>
-  <button onclick="crearUsuario()">CREAR USUARIO</button>
-</div>
-
-<!-- SISTEMA -->
-<div class="panel hidden" id="s77">
+<div class="panel" id="s77">
 
 <h2>ÚLTIMOS 16 NÚMEROS</h2>
 <div class="inputs">
@@ -169,48 +139,10 @@ button{
 const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
-let adminClave=null;
-
-// acumuladores
-let gastos=0;        // suma acumulativa del TOTAL
-let diferencia=0;    // acumulador independiente
-let totalAcum=0;     // solo para calcular fichas
+let gastos=0;
 
 const cas=[...document.querySelectorAll(".inputs input")];
 
-/* LOGIN */
-async function login(){
-  const clave=document.getElementById("clave").value;
-  const r=await fetch(API+"/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({clave})
-  });
-  const d=await r.json();
-  if(!d.ok){
-    document.getElementById("error").innerText=d.error||"FORBIDDEN";
-    return;
-  }
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
-  if(d.admin){
-    adminClave=clave;
-    document.getElementById("admin").classList.remove("hidden");
-  }
-}
-
-async function crearUsuario(){
-  const nuevaClave=document.getElementById("nuevaClave").value;
-  const dias=document.getElementById("dias").value;
-  await fetch(API+"/crear-usuario",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({adminClave,nuevaClave,dias})
-  });
-  alert("Usuario creado");
-}
-
-/* SISTEMA */
 document.getElementById("nuevoNumero").onchange=async e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v))return;
@@ -226,68 +158,39 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   });
   const d=await r.json();
 
-  document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
-  document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
+  document.getElementById("fav").innerText =
+    d.favoritos.length ? d.favoritos.join(", ") : "—";
+  document.getElementById("exp").innerText =
+    d.explosivos.length ? d.explosivos.join(", ") : "—";
 
-  // activar solo con 16
-  if(ultimos.length<16){
+  // 🔒 solo con 16 números
+  if(ultimos.length < 16){
     e.target.value="";
     return;
   }
 
-  // TOTAL del ingreso (cantidad)
-  const totalIngreso = d.favoritos.length + d.explosivos.length;
-  document.getElementById("total").value = totalIngreso;
+  // TOTAL = cantidad actual
+  const totalActual = d.favoritos.length + d.explosivos.length;
+  document.getElementById("total").value = totalActual;
 
-  // GASTOS acumula TOTAL
-  gastos += totalIngreso;
+  // 🔴 GASTOS = acumulado del TOTAL
+  gastos += totalActual;
   document.getElementById("gastos").value = gastos;
-
-  // DIFERENCIA siempre absorbe el gasto (negativo)
-  diferencia -= totalIngreso;
-
-  // FICHAS
-  totalAcum += totalIngreso;
-  const fichas = 1 + Math.floor(totalAcum / 25);
-  document.getElementById("fichas").value = fichas;
-
-  // al completar lote, sumar positivo de fichas*36 y resetear GASTOS y totalAcum
-  if(d.completed){
-    diferencia += (fichas * 36);
-    gastos = 0;
-    totalAcum = 0;
-  }
-
-  // colores diferencia
-  const diff=document.getElementById("diferencia");
-  if(diferencia>=0){
-    diff.style.background="#6ecbff";
-    diff.style.color="black";
-  }else{
-    diff.style.background="red";
-    diff.style.color="black";
-  }
-  diff.value = diferencia;
-
-  // pulsión fichas
-  const f=document.getElementById("fichas");
-  f.classList.remove("pulse"); void f.offsetWidth; f.classList.add("pulse");
 
   e.target.value="";
 };
 
 function reiniciar(){
   ultimos=[];
-  cas.forEach(c=>c.value="");
   gastos=0;
-  diferencia=0;
-  totalAcum=0;
-  total.value=gastos.value=fichas.value=diferencia.value="";
+  cas.forEach(c=>c.value="");
+  total.value="";
+  gastos.value="";
   fav.innerText="—";
   exp.innerText="—";
 }
 </script>
 
 </body>
-                                    </html>
-                                      
+  </html>
+                                    
