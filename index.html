@@ -67,6 +67,13 @@ button{
   padding:15px;
   border-radius:8px;
 }
+.totalBox input{
+  width:80px;
+  height:50px;
+  font-size:28px;
+  text-align:center;
+  border-radius:8px;
+}
 </style>
 </head>
 
@@ -107,9 +114,22 @@ button{
   </div>
 
   <h3>NUEVO NÚMERO</h3>
-  <input class="nuevo" id="nuevoNumero" type="number">
-  <br>
-  <button onclick="reiniciar()">REINICIAR</button>
+
+  <div style="display:flex; justify-content:center; gap:20px; align-items:flex-start;">
+    <div>
+      <input class="nuevo" id="nuevoNumero" type="number">
+      <br>
+      <button onclick="reiniciar()">REINICIAR</button>
+    </div>
+
+    <div class="totalBox">
+      <div><strong>TOTAL</strong></div>
+      <input id="total" disabled>
+      <br><br>
+      <div><strong>FICHAS</strong></div>
+      <input id="fichas" disabled>
+    </div>
+  </div>
 
   <h3>FAVORITOS</h3>
   <div class="favoritos" id="fav">—</div>
@@ -123,6 +143,7 @@ const API = "https://s77-backend.onrender.com";
 
 let ultimos = [];
 let adminClave = null;
+let totalAcumulado = 0;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 
@@ -131,9 +152,7 @@ async function login(){
 
   const r = await fetch(API + "/login", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ clave })
   });
 
@@ -159,9 +178,7 @@ async function crearUsuario(){
 
   await fetch(API + "/crear-usuario", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ adminClave, nuevaClave, dias })
   });
 
@@ -178,13 +195,20 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   const r = await fetch(API + "/calcular", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ultimos })
   });
 
   const d = await r.json();
+
+  if (d.completed) {
+    totalAcumulado = 0;
+  }
+
+  totalAcumulado += d.favoritos.length + d.explosivos.length;
+
+  document.getElementById("total").value = totalAcumulado;
+  document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -204,8 +228,11 @@ function reiniciar(){
   render();
   fav.innerText = "—";
   exp.innerText = "—";
+  totalAcumulado = 0;
+  document.getElementById("total").value = "";
+  document.getElementById("fichas").value = "";
 }
 </script>
 
 </body>
-</html>
+  </html>
