@@ -5,36 +5,34 @@
 <title>Sistema Premium S77</title>
 
 <style>
-/* ====== BASE ====== */
 body{
   font-family: Arial, sans-serif;
-  background: black;
-  color: #fff;
-  text-align: center;
-  padding: 20px;
+  background:black;
+  color:#fff;
+  text-align:center;
+  padding:20px;
 }
 .panel{
-  max-width: 580px;
-  margin: 15px auto;
-  padding: 15px;
-  border-radius: 12px;
-  background: black;
+  max-width:580px;
+  margin:15px auto;
+  padding:15px;
+  border-radius:12px;
+  background:black;
 }
-.hidden{ display:none; }
+.hidden{display:none}
 
-input, select, button{
+input,select,button{
   padding:10px;
   border-radius:8px;
   border:none;
   margin:5px;
 }
 button{
-  background: maroon;
-  color: white;
-  font-weight: bold;
+  background:maroon;
+  color:white;
+  font-weight:bold;
 }
 
-/* ====== ULTIMOS 16 ====== */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
@@ -50,9 +48,8 @@ button{
   background:white;
   color:black;
 }
-.inputs input:first-child{ background:#7fd3ff; }
+.inputs input:first-child{background:#7fd3ff;}
 
-/* ====== NUEVO NUMERO ====== */
 .nuevo{
   width:70px;height:70px;
   font-size:34px;
@@ -62,48 +59,34 @@ button{
   background:#7fd3ff;
 }
 
-/* ====== RESULTADOS ====== */
 .favoritos{
-  background: green;
-  font-size: 26px;
-  padding: 15px;
-  border-radius: 8px;
+  background:green;
+  font-size:26px;
+  padding:15px;
+  border-radius:8px;
 }
 .explosivos{
-  background: red;
-  font-size: 48px;
-  padding: 15px;
-  border-radius: 8px;
+  background:red;
+  font-size:48px;
+  padding:15px;
+  border-radius:8px;
 }
 
-/* ====== BOXES ====== */
 .box input{
   width:95px;
   height:52px;
   font-size:28px;
   text-align:center;
   border-radius:8px;
-  font-family:"Segoe UI", Arial, sans-serif;
+  font-family:"Segoe UI",Arial,sans-serif;
 }
 
-/* ====== COLORES ====== */
-#total{ background:#666; color:white; }
-#fichas{
-  background:black;
-  color:#00ff66;
-  font-family:"Segoe UI", Arial, sans-serif;
-}
-#gastos{
-  background:black;
-  color:red;
-}
-#diferencia{
-  background:red; /* por defecto negativo */
-  color:black;
-}
+#total{background:#666;color:white;}
+#fichas{background:black;color:#00ff66;}
+#gastos{background:black;color:red;}
+#diferencia{background:red;color:black;}
 
-/* ====== ANIMACION FICHAS ====== */
-.pulse{ animation:pulse 0.6s ease-in-out; }
+.pulse{animation:pulse .6s ease-in-out;}
 @keyframes pulse{
   0%{transform:scale(1)}
   50%{transform:scale(1.15)}
@@ -116,7 +99,7 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- ===== LOGIN ===== -->
+<!-- LOGIN -->
 <div class="panel" id="login">
   <h2>INGRESAR CLAVE</h2>
   <input id="clave">
@@ -125,7 +108,7 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- ===== ADMIN ===== -->
+<!-- ADMIN -->
 <div class="panel hidden" id="admin">
   <h2>ADMINISTRADOR</h2>
   <input id="nuevaClave" placeholder="Clave usuario">
@@ -138,7 +121,7 @@ button{
   <button onclick="crearUsuario()">CREAR USUARIO</button>
 </div>
 
-<!-- ===== SISTEMA ===== -->
+<!-- SISTEMA -->
 <div class="panel hidden" id="s77">
 
 <h2>ÚLTIMOS 16 NÚMEROS</h2>
@@ -153,7 +136,6 @@ button{
 
 <div style="display:flex;justify-content:center;gap:20px;align-items:flex-start;">
 
-  <!-- GASTOS / DIFERENCIA -->
   <div class="box">
     <strong>GASTOS</strong><br>
     <input id="gastos" disabled><br><br>
@@ -161,13 +143,11 @@ button{
     <input id="diferencia" disabled>
   </div>
 
-  <!-- NUEVO -->
   <div>
     <input class="nuevo" id="nuevoNumero" type="number"><br>
     <button onclick="reiniciar()">REINICIAR</button>
   </div>
 
-  <!-- TOTAL / FICHAS -->
   <div class="box">
     <strong>TOTAL</strong><br>
     <input id="total" disabled><br><br>
@@ -186,153 +166,119 @@ button{
 </div>
 
 <script>
-/* ===== CONFIG ===== */
-const API = "https://s77-backend.onrender.com";
+const API="https://s77-backend.onrender.com";
 
-/* ===== ESTADO ===== */
-let ultimos = [];
-let adminClave = null;
+let ultimos=[];
+let adminClave=null;
 
-let totalAcumulado = 0;   // acumulado para fichas
-let gastos = 0;           // suma acumulativa del TOTAL por ingreso
-let diferencia = 0;       // saldo
+let gastos=0;
+let diferencia=0;
+let totalAcumParaFichas=0;
 
-const cas = [...document.querySelectorAll(".inputs input")];
+const cas=[...document.querySelectorAll(".inputs input")];
 
-/* ===== LOGIN ===== */
+/* LOGIN */
 async function login(){
-  const clave = document.getElementById("clave").value;
-
-  const r = await fetch(API + "/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ clave })
+  const clave=document.getElementById("clave").value;
+  const r=await fetch(API+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({clave})
   });
-
-  const d = await r.json();
-
-  if (!d.ok) {
-    document.getElementById("error").innerText = d.error || "FORBIDDEN";
+  const d=await r.json();
+  if(!d.ok){
+    document.getElementById("error").innerText=d.error||"FORBIDDEN";
     return;
   }
-
   document.getElementById("login").classList.add("hidden");
   document.getElementById("s77").classList.remove("hidden");
-
-  if (d.admin) {
-    adminClave = clave;
+  if(d.admin){
+    adminClave=clave;
     document.getElementById("admin").classList.remove("hidden");
   }
 }
 
-/* ===== ADMIN ===== */
 async function crearUsuario(){
-  const nuevaClave = document.getElementById("nuevaClave").value;
-  const dias = document.getElementById("dias").value;
-
-  await fetch(API + "/crear-usuario", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ adminClave, nuevaClave, dias })
+  const nuevaClave=document.getElementById("nuevaClave").value;
+  const dias=document.getElementById("dias").value;
+  await fetch(API+"/crear-usuario",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({adminClave,nuevaClave,dias})
   });
-
   alert("Usuario creado");
 }
 
-/* ===== SISTEMA ===== */
-document.getElementById("nuevoNumero").onchange = async e => {
-  const v = parseInt(e.target.value);
-  if (isNaN(v)) return;
+/* SISTEMA */
+document.getElementById("nuevoNumero").onchange=async e=>{
+  const v=parseInt(e.target.value);
+  if(isNaN(v))return;
 
-  // cargar ultimos
   ultimos.unshift(v);
-  if (ultimos.length > 16) ultimos.pop();
-  cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
+  if(ultimos.length>16)ultimos.pop();
+  cas.forEach((c,i)=>c.value=ultimos[i]??"");
 
-  const r = await fetch(API + "/calcular", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ultimos })
+  const r=await fetch(API+"/calcular",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ultimos})
   });
+  const d=await r.json();
 
-  const d = await r.json();
+  document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
+  document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
 
-  // mostrar favoritos / explosivos
-  document.getElementById("fav").innerText =
-    d.favoritos.length ? d.favoritos.join(", ") : "—";
-  document.getElementById("exp").innerText =
-    d.explosivos.length ? d.explosivos.join(", ") : "—";
-
-  // activar solo con 16
-  if (ultimos.length < 16){
-    e.target.value = "";
+  if(ultimos.length<16){
+    e.target.value="";
     return;
   }
 
-  // TOTAL DEL INGRESO (cantidad, no suma de valores)
-  const totalIngreso = d.favoritos.length + d.explosivos.length;
+  const totalIngreso=d.favoritos.length+d.explosivos.length;
+  document.getElementById("total").value=totalIngreso;
 
-  // acumulados
-  totalAcumulado += totalIngreso;
-  gastos += totalIngreso;
+  gastos+=totalIngreso;
+  diferencia=-gastos;
 
-  // FICHAS
-  const fichas = 1 + Math.floor(totalAcumulado / 25);
+  totalAcumParaFichas+=totalIngreso;
+  const fichas=1+Math.floor(totalAcumParaFichas/25);
 
-  // DIFERENCIA
-  if (d.completed) {
-    diferencia = (fichas * 36) - gastos;
-    // reinicio por lote
-    totalAcumulado = 0;
-    gastos = 0;
-  } else {
-    diferencia = -gastos;
+  if(d.completed){
+    diferencia+=fichas*36;
+    totalAcumParaFichas=0;
+    gastos=0;
   }
 
-  // colores diferencia
-  const diff = document.getElementById("diferencia");
-  if (diferencia >= 0){
-    diff.style.background = "#6ecbff";
-    diff.style.color = "black";
-  } else {
-    diff.style.background = "red";
-    diff.style.color = "black";
+  document.getElementById("gastos").value=gastos;
+  document.getElementById("fichas").value=fichas;
+  document.getElementById("diferencia").value=diferencia;
+
+  const diff=document.getElementById("diferencia");
+  if(diferencia>=0){
+    diff.style.background="#6ecbff";
+    diff.style.color="black";
+  }else{
+    diff.style.background="red";
+    diff.style.color="black";
   }
 
-  // mostrar
-  document.getElementById("total").value = totalIngreso;
-  document.getElementById("gastos").value = gastos;
-  document.getElementById("fichas").value = fichas;
-  document.getElementById("diferencia").value = diferencia;
+  const f=document.getElementById("fichas");
+  f.classList.remove("pulse"); void f.offsetWidth; f.classList.add("pulse");
 
-  // pulsión fichas
-  const f = document.getElementById("fichas");
-  f.classList.remove("pulse");
-  void f.offsetWidth;
-  f.classList.add("pulse");
-
-  e.target.value = "";
+  e.target.value="";
 };
 
-/* ===== REINICIAR ===== */
 function reiniciar(){
-  ultimos = [];
+  ultimos=[];
   cas.forEach(c=>c.value="");
-
-  totalAcumulado = 0;
-  gastos = 0;
-  diferencia = 0;
-
-  document.getElementById("total").value = "";
-  document.getElementById("gastos").value = "";
-  document.getElementById("fichas").value = "";
-  document.getElementById("diferencia").value = "";
-
-  document.getElementById("fav").innerText = "—";
-  document.getElementById("exp").innerText = "—";
+  gastos=0;
+  diferencia=0;
+  totalAcumParaFichas=0;
+  total.value=gastos.value=fichas.value=diferencia.value="";
+  fav.innerText="—";
+  exp.innerText="—";
 }
 </script>
 
 </body>
   </html>
-                                    
+                                  
