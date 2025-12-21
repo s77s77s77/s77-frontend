@@ -2,219 +2,111 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Premium S77</title>
+<title>S77 – Control de Gastos</title>
 
 <style>
 body{
-  font-family: Arial, sans-serif;
-  background:black;
-  color:#fff;
-  text-align:center;
-  padding:20px;
+    font-family: Arial, sans-serif;
+    background:#111;
+    color:#fff;
+    text-align:center;
+    padding:20px;
 }
-.panel{
-  max-width:580px;
-  margin:15px auto;
-  padding:15px;
-  border-radius:12px;
-  background:black;
-}
-.hidden{display:none}
 
-input,button{
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  margin:5px;
+.contenedor{
+    background:#222;
+    padding:20px;
+    border-radius:10px;
+    max-width:360px;
+    margin:auto;
 }
+
+input{
+    width:100%;
+    padding:10px;
+    margin:8px 0;
+    font-size:20px;
+    text-align:center;
+    border-radius:6px;
+    border:none;
+}
+
 button{
-  background:maroon;
-  color:white;
-  font-weight:bold;
+    width:100%;
+    padding:12px;
+    font-size:18px;
+    border:none;
+    border-radius:6px;
+    background:#800020;
+    color:#fff;
+    font-weight:bold;
+    cursor:pointer;
 }
 
-.inputs{
-  display:grid;
-  grid-template-columns:repeat(4,70px);
-  gap:12px;
-  justify-content:center;
+.resultado{
+    margin-top:15px;
+    font-size:22px;
+    padding:10px;
+    background:#000;
+    border-radius:6px;
 }
-.inputs input{
-  width:70px;height:70px;
-  font-size:34px;
-  font-weight:bold;
-  text-align:center;
-  border:4px solid red;
-  background:white;
-  color:black;
-}
-.inputs input:first-child{background:#7fd3ff;}
-
-.nuevo{
-  width:70px;height:70px;
-  font-size:34px;
-  font-weight:bold;
-  text-align:center;
-  border:4px solid red;
-  background:#7fd3ff;
-}
-
-.favoritos{background:green;font-size:26px;padding:15px;border-radius:8px;}
-.explosivos{background:red;font-size:48px;padding:15px;border-radius:8px;}
-
-.box input{
-  width:95px;height:52px;font-size:28px;text-align:center;border-radius:8px;
-}
-
-#total{background:#666;color:white;}
-#gastos{background:black;color:red;}
-#fichas{background:black;color:#00ff66;}
-#diferencia{background:black;color:red;}
 </style>
 </head>
 
 <body>
 
-<h1>🎡 Sistema Premium S77</h1>
+<h2>Sistema S77</h2>
 
-<div class="panel" id="login">
-  <h2>INGRESAR CLAVE</h2>
-  <input id="clave">
-  <br>
-  <button onclick="login()">INGRESAR</button>
-  <p id="error" style="color:red;"></p>
-</div>
+<div class="contenedor">
 
-<div class="panel hidden" id="s77">
+    <label>Nuevo número</label>
+    <input type="number" id="nuevoNumero">
 
-<h2>ÚLTIMOS 16 NÚMEROS</h2>
-<div class="inputs">
-  <input disabled><input disabled><input disabled><input disabled>
-  <input disabled><input disabled><input disabled><input disabled>
-  <input disabled><input disabled><input disabled><input disabled>
-  <input disabled><input disabled><input disabled><input disabled>
-</div>
+    <button onclick="agregarNumero()">AGREGAR</button>
 
-<h3>NUEVO NÚMERO</h3>
+    <div class="resultado">TOTAL: <span id="total">0</span></div>
+    <div class="resultado">GASTOS: <span id="gastos">0</span></div>
+    <div class="resultado">DIFERENCIA: <span id="diferencia">0</span></div>
 
-<div style="display:flex;justify-content:center;gap:20px;">
-
-  <div class="box">
-    <strong>GASTOS</strong><br>
-    <input id="gastos" disabled><br><br>
-    <strong>DIFERENCIA</strong><br>
-    <input id="diferencia" disabled>
-  </div>
-
-  <div>
-    <input class="nuevo" id="nuevoNumero" type="number"><br>
-    <button onclick="reiniciar()">REINICIAR</button>
-  </div>
-
-  <div class="box">
-    <strong>TOTAL</strong><br>
-    <input id="total" disabled><br><br>
-    <strong>FICHAS</strong><br>
-    <input id="fichas" disabled>
-  </div>
-
-</div>
-
-<h3>FAVORITOS</h3>
-<div class="favoritos" id="fav">—</div>
-
-<h3>EXPLOSIVOS</h3>
-<div class="explosivos" id="exp">—</div>
+    <button onclick="cerrarLote()">CERRAR LOTE</button>
 
 </div>
 
 <script>
-const API="https://s77-backend.onrender.com";
+let total = 0;
+let gastos = 0;
+let diferencia = 0;
+let loteActivo = false;
 
-let ultimos=[];
-let gastosNum=0;
-let totalAcum=0;
+function agregarNumero(){
+    const valor = Number(document.getElementById("nuevoNumero").value);
+    if(valor === 0) return;
 
-const gastosInput=document.getElementById("gastos");
-const diferenciaInput=document.getElementById("diferencia");
-const totalInput=document.getElementById("total");
-const fichasInput=document.getElementById("fichas");
-const fav=document.getElementById("fav");
-const exp=document.getElementById("exp");
-const cas=[...document.querySelectorAll(".inputs input")];
+    // inicia lote si no hay uno activo
+    if(!loteActivo){
+        loteActivo = true;
+        total = 0;
+    }
 
-async function login(){
-  const clave=document.getElementById("clave").value;
-  const r=await fetch(API+"/login",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({clave})
-  });
-  const d=await r.json();
-  if(!d.ok){
-    document.getElementById("error").innerText=d.error||"FORBIDDEN";
-    return;
-  }
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
+    total += valor;
+    gastos += valor; // GASTOS acumula TOTAL en tiempo real
+
+    document.getElementById("total").innerText = total;
+    document.getElementById("gastos").innerText = gastos;
+
+    document.getElementById("nuevoNumero").value = "";
 }
 
-nuevoNumero.onchange=async e=>{
-  const v=parseInt(e.target.value);
-  if(isNaN(v))return;
+function cerrarLote(){
+    if(!loteActivo) return;
 
-  ultimos.unshift(v);
-  if(ultimos.length>16)ultimos.pop();
-  cas.forEach((c,i)=>c.value=ultimos[i]??"");
+    diferencia += 1; // cada lote completo vale 1
+    document.getElementById("diferencia").innerText = diferencia;
 
-  const r=await fetch(API+"/calcular",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ultimos})
-  });
-  const d=await r.json();
+    total = 0;
+    document.getElementById("total").innerText = total;
 
-  fav.innerText=d.favoritos.length?d.favoritos.join(", "):"—";
-  exp.innerText=d.explosivos.length?d.explosivos.join(", "):"—";
-
-  if(ultimos.length<16){
-    e.target.value="";
-    return;
-  }
-
-  const totalActual=d.favoritos.length+d.explosivos.length;
-  totalInput.value=totalActual;
-
-  // ✅ LÓGICA FINAL CORRECTA DE GASTOS
-  if(d.completed){
-    gastosNum = totalActual;      // reinicio = copiar TOTAL
-  }else{
-    gastosNum += totalActual;     // suma acumulada normal
-  }
-
-  gastosInput.value = gastosNum;
-
-  // DIFERENCIA espejo negativo
-  diferenciaInput.value = -gastosNum;
-
-  // FICHAS (sin tocar)
-  totalAcum += totalActual;
-  fichasInput.value = 1 + Math.floor(totalAcum / 25);
-
-  e.target.value="";
-};
-
-function reiniciar(){
-  ultimos=[];
-  gastosNum=0;
-  totalAcum=0;
-  cas.forEach(c=>c.value="");
-  gastosInput.value="";
-  diferenciaInput.value="";
-  totalInput.value="";
-  fichasInput.value="";
-  fav.innerText="—";
-  exp.innerText="—";
+    loteActivo = false;
 }
 </script>
 
