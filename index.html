@@ -27,9 +27,19 @@ input,select,button{
   margin:5px;
 }
 button{
+  font-weight:bold;
+  cursor:pointer;
+}
+button.general{
   background:maroon;
   color:white;
-  font-weight:bold;
+}
+button.resetGastos{
+  width:90px;
+  height:50px;
+  background:green;
+  color:white;
+  font-size:16px;
 }
 .inputs{
   display:grid;
@@ -108,24 +118,31 @@ button{
   <h3>NUEVO NÚMERO</h3>
 
   <div class="control">
+
+    <!-- IZQUIERDA -->
     <div class="col box">
       <div><strong>GASTOS</strong></div>
       <input id="gastos" disabled value="0">
-      <div><strong>DIFERENCIA</strong></div>
-      <input id="diferencia" disabled value="0">
+
+      <!-- 🔴 BOTÓN NUEVO -->
+      <button class="resetGastos" onclick="resetGastos()">REINICIAR</button>
     </div>
 
+    <!-- CENTRO -->
     <div class="col">
       <input class="nuevo" id="nuevoNumero" type="number">
-      <button onclick="reiniciar()">REINICIAR</button>
+      <button class="general" onclick="reiniciar()">REINICIAR</button>
     </div>
 
+    <!-- DERECHA -->
     <div class="col box">
       <div><strong>TOTAL</strong></div>
       <input id="total" disabled value="0">
+
       <div><strong>FICHAS</strong></div>
       <input id="fichas" disabled>
     </div>
+
   </div>
 
   <h3>FAVORITOS</h3>
@@ -140,7 +157,6 @@ const API = "https://s77-backend.onrender.com";
 
 let ultimos = [];
 let gastos = 0;
-let diferencia = 0;
 let sistemaActivo = false;
 
 const cas = [...document.querySelectorAll(".inputs input")];
@@ -151,12 +167,11 @@ document.getElementById("nuevoNumero").onchange = async e => {
   const v = parseInt(e.target.value);
   if (isNaN(v)) return;
 
-  // cargar últimos 16
   ultimos.unshift(v);
   if (ultimos.length > 16) ultimos.pop();
   render();
 
-  // 🔒 activar sistema SOLO después de llenar 16 y entrar uno más
+  // activar sistema luego de llenar 16 y entrar uno más
   if (ultimos.length === 16 && !sistemaActivo) {
     sistemaActivo = true;
     e.target.value = "";
@@ -182,11 +197,6 @@ document.getElementById("nuevoNumero").onchange = async e => {
   gastos += total;
   document.getElementById("gastos").value = gastos;
 
-  if (d.completed) {
-    diferencia += 1;
-    document.getElementById("diferencia").value = diferencia;
-  }
-
   document.getElementById("fichas").value = total > 36 ? 2 : 1;
 
   document.getElementById("fav").innerText =
@@ -202,17 +212,22 @@ function render(){
   cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
 }
 
+/* 🔴 REINICIA SOLO GASTOS */
+function resetGastos(){
+  gastos = 0;
+  document.getElementById("gastos").value = 0;
+}
+
+/* 🔴 REINICIO GENERAL */
 function reiniciar(){
   ultimos = [];
   render();
 
   gastos = 0;
-  diferencia = 0;
   sistemaActivo = false;
 
   document.getElementById("total").value = 0;
   document.getElementById("gastos").value = 0;
-  document.getElementById("diferencia").value = 0;
   document.getElementById("fichas").value = "";
 
   fav.innerText = "—";
@@ -221,4 +236,5 @@ function reiniciar(){
 </script>
 
 </body>
-</html>
+  </html>
+  
