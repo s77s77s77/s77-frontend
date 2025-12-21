@@ -80,7 +80,19 @@ button.loginBtn{
   gap:20px;
   align-items:start;
   justify-content:center;
+  border-radius:12px;
 }
+
+/* 🔵 ANIMACIÓN CELESTE LOTE COMPLETO */
+@keyframes flashCeleste {
+  0%   { box-shadow:0 0 0 rgba(127,211,255,0); }
+  30%  { box-shadow:0 0 25px rgba(127,211,255,0.9); }
+  100% { box-shadow:0 0 0 rgba(127,211,255,0); }
+}
+.flash-celeste{
+  animation: flashCeleste 0.45s ease-out;
+}
+
 .col{
   display:flex;
   flex-direction:column;
@@ -140,21 +152,19 @@ button.loginBtn{
 
   <h3>NUEVO NÚMERO</h3>
 
-  <div class="control">
+  <!-- 🔵 CONTENEDOR QUE DESTELLA -->
+  <div class="control" id="controlPanel">
 
-    <!-- IZQUIERDA -->
     <div class="col box">
       <div><strong>GASTOS</strong></div>
       <input id="gastos" disabled value="0">
       <button class="resetGastos" onclick="resetGastos()">REINICIAR</button>
     </div>
 
-    <!-- CENTRO -->
     <div class="col">
       <input class="nuevo" id="nuevoNumero" type="number">
     </div>
 
-    <!-- DERECHA -->
     <div class="col box">
       <div><strong>TOTAL</strong></div>
       <input id="total" disabled value="0">
@@ -180,6 +190,7 @@ let gastos = 0;
 let sistemaActivo = false;
 
 const cas = [...document.querySelectorAll(".inputs input")];
+const controlPanel = document.getElementById("controlPanel");
 
 async function login(){
   const clave = document.getElementById("clave").value;
@@ -227,13 +238,11 @@ document.getElementById("nuevoNumero").onchange = async e => {
   if (ultimos.length > 16) ultimos.pop();
   render();
 
-  // activar sistema tras llenar 16 y entrar uno más
   if (ultimos.length === 16 && !sistemaActivo) {
     sistemaActivo = true;
     e.target.value = "";
     return;
   }
-
   if (!sistemaActivo) {
     e.target.value = "";
     return;
@@ -253,8 +262,16 @@ document.getElementById("nuevoNumero").onchange = async e => {
   gastos += total;
   document.getElementById("gastos").value = gastos;
 
-  const fichas = Math.floor(gastos / 25) + 1;
-  document.getElementById("fichas").value = fichas;
+  document.getElementById("fichas").value =
+    Math.floor(gastos / 25) + 1;
+
+  // 🔵 DESTELLO CELESTE CUANDO SE COMPLETA LOTE
+  if (d.completed) {
+    controlPanel.classList.add("flash-celeste");
+    setTimeout(() => {
+      controlPanel.classList.remove("flash-celeste");
+    }, 450);
+  }
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -277,5 +294,5 @@ function resetGastos(){
 </script>
 
 </body>
-    </html>
+  </html>
   
