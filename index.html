@@ -33,7 +33,6 @@ button{
   font-weight:bold;
 }
 
-/* ÚLTIMOS 16 */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
@@ -60,7 +59,6 @@ button{
   background:#7fd3ff;
 }
 
-/* RESULTADOS */
 .favoritos{
   background:green;
   font-size:26px;
@@ -74,7 +72,6 @@ button{
   border-radius:8px;
 }
 
-/* BOXES */
 .box input{
   width:95px;
   height:52px;
@@ -86,6 +83,7 @@ button{
 
 #total{background:#666;color:white;}
 #gastos{background:black;color:red;}
+#fichas{background:black;color:#00ff66;}
 #diferencia{background:black;color:red;}
 </style>
 </head>
@@ -145,7 +143,9 @@ button{
 
   <div class="box">
     <strong>TOTAL</strong><br>
-    <input id="total" disabled>
+    <input id="total" disabled><br><br>
+    <strong>FICHAS</strong><br>
+    <input id="fichas" disabled>
   </div>
 
 </div>
@@ -220,19 +220,29 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   document.getElementById("exp").innerText =
     d.explosivos.length ? d.explosivos.join(", ") : "—";
 
-  if(ultimos.length<16){
+  if(ultimos.length < 16){
     e.target.value="";
     return;
   }
 
-  const totalActual=d.favoritos.length+d.explosivos.length;
-  document.getElementById("total").value=totalActual;
+  // TOTAL actual
+  const totalActual = d.favoritos.length + d.explosivos.length;
+  document.getElementById("total").value = totalActual;
 
-  gastos+=totalActual;
-  document.getElementById("gastos").value=gastos;
+  // GASTOS acumulativo
+  gastos += totalActual;
+  document.getElementById("gastos").value = gastos;
 
-  /* 🔴 DIFERENCIA = ESPEJO NEGATIVO */
-  document.getElementById("diferencia").value = -gastos;
+  // DIFERENCIA = espejo negativo
+  let diferencia = -gastos;
+
+  // SOLO si se completa un lote → sumar FICHAS * 36
+  if(d.completed){
+    const fichas = parseInt(document.getElementById("fichas").value || "1");
+    diferencia += fichas * 36;
+  }
+
+  document.getElementById("diferencia").value = diferencia;
 
   e.target.value="";
 };
@@ -250,5 +260,5 @@ function reiniciar(){
 </script>
 
 </body>
-      </html>
+  </html>
   
