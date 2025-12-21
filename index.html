@@ -133,7 +133,6 @@ const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
 let gastosNum=0;
-let diferenciaNum=0;
 let totalAcum=0;
 
 const gastosInput=document.getElementById("gastos");
@@ -186,18 +185,17 @@ nuevoNumero.onchange=async e=>{
   const totalActual=d.favoritos.length+d.explosivos.length;
   totalInput.value=totalActual;
 
-  // 🔴 LÓGICA CORRECTA DE GASTOS
+  // ✅ LÓGICA FINAL CORRECTA DE GASTOS
   if(d.completed){
-    gastosNum = totalActual;        // reinicio = copiar TOTAL
+    gastosNum = totalActual;      // reinicio = copiar TOTAL
   }else{
-    gastosNum += totalActual;       // suma normal
+    gastosNum += totalActual;     // suma acumulada normal
   }
 
   gastosInput.value = gastosNum;
 
   // DIFERENCIA espejo negativo
-  diferenciaNum = -gastosNum;
-  diferenciaInput.value = diferenciaNum;
+  diferenciaInput.value = -gastosNum;
 
   // FICHAS (sin tocar)
   totalAcum += totalActual;
@@ -209,7 +207,6 @@ nuevoNumero.onchange=async e=>{
 function reiniciar(){
   ultimos=[];
   gastosNum=0;
-  diferenciaNum=0;
   totalAcum=0;
   cas.forEach(c=>c.value="");
   gastosInput.value="";
