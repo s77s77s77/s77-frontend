@@ -21,7 +21,7 @@ body{
 }
 .hidden{display:none}
 
-input,select,button{
+input,button{
   padding:10px;
   border-radius:8px;
   border:none;
@@ -59,25 +59,11 @@ button{
   background:#7fd3ff;
 }
 
-.favoritos{
-  background:green;
-  font-size:26px;
-  padding:15px;
-  border-radius:8px;
-}
-.explosivos{
-  background:red;
-  font-size:48px;
-  padding:15px;
-  border-radius:8px;
-}
+.favoritos{background:green;font-size:26px;padding:15px;border-radius:8px;}
+.explosivos{background:red;font-size:48px;padding:15px;border-radius:8px;}
 
 .box input{
-  width:95px;
-  height:52px;
-  font-size:28px;
-  text-align:center;
-  border-radius:8px;
+  width:95px;height:52px;font-size:28px;text-align:center;border-radius:8px;
 }
 
 #total{background:#666;color:white;}
@@ -146,13 +132,18 @@ button{
 const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
-let gastos=0;
-let diferencia=0;
-let totalAcumulado=0;
+let gastosNum=0;
+let diferenciaNum=0;
+let totalAcum=0;
 
+const gastosInput=document.getElementById("gastos");
+const diferenciaInput=document.getElementById("diferencia");
+const totalInput=document.getElementById("total");
+const fichasInput=document.getElementById("fichas");
+const fav=document.getElementById("fav");
+const exp=document.getElementById("exp");
 const cas=[...document.querySelectorAll(".inputs input")];
 
-/* LOGIN */
 async function login(){
   const clave=document.getElementById("clave").value;
   const r=await fetch(API+"/login",{
@@ -192,42 +183,37 @@ nuevoNumero.onchange=async e=>{
     return;
   }
 
-  const total=d.favoritos.length+d.explosivos.length;
-  total.value=total;
+  const totalActual=d.favoritos.length+d.explosivos.length;
+  totalInput.value=totalActual;
 
-  gastos+=total;
+  gastosNum+=totalActual;
+  gastosInput.value=gastosNum;
 
-  /* 🔴 REINICIO DE GASTOS SOLO AL COMPLETAR LOTE */
-  if(d.completed){
-    gastos=0;
-  }
+  diferenciaNum=-gastosNum;
 
-  gastos.value=gastos;
-
-  totalAcumulado+=total;
-  const fichas=1+Math.floor(totalAcumulado/25);
-  fichas.value=fichas;
-
-  diferencia = -gastos;
+  totalAcum+=totalActual;
+  const fichas=1+Math.floor(totalAcum/25);
+  fichasInput.value=fichas;
 
   if(d.completed){
-    diferencia += fichas * 36;
+    diferenciaNum+=fichas*36;
+    gastosNum=0;
   }
 
-  diferencia.value=diferencia;
+  diferenciaInput.value=diferenciaNum;
   e.target.value="";
 };
 
 function reiniciar(){
   ultimos=[];
-  gastos=0;
-  diferencia=0;
-  totalAcumulado=0;
+  gastosNum=0;
+  diferenciaNum=0;
+  totalAcum=0;
   cas.forEach(c=>c.value="");
-  total.value="";
-  gastos.value="";
-  fichas.value="";
-  diferencia.value="";
+  gastosInput.value="";
+  diferenciaInput.value="";
+  totalInput.value="";
+  fichasInput.value="";
   fav.innerText="—";
   exp.innerText="—";
 }
@@ -235,4 +221,4 @@ function reiniciar(){
 
 </body>
   </html>
-  
+                                    
