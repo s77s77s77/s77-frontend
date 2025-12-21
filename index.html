@@ -28,7 +28,6 @@ input,select,button{
 }
 button{
   font-weight:bold;
-  cursor:pointer;
 }
 button.resetGastos{
   width:90px;
@@ -113,7 +112,6 @@ button.loginBtn{
   animation:pulse 1s ease-in-out infinite;
 }
 
-/* pulsión */
 @keyframes pulse{
   0%{transform:scale(1)}
   50%{transform:scale(1.08)}
@@ -179,7 +177,7 @@ button.loginBtn{
     </div>
   </div>
 
-  <!-- 🔵 AVISO ACIERTO -->
+  <!-- 🔵 ACIERTO -->
   <div id="acierto" class="hidden">ACIerto</div>
 
   <h3>FAVORITOS</h3>
@@ -196,6 +194,7 @@ let ultimos = [];
 let adminClave = null;
 let gastos = 0;
 let sistemaActivo = false;
+let loteCerradoMostrado = false;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 const acierto = document.getElementById("acierto");
@@ -273,12 +272,17 @@ document.getElementById("nuevoNumero").onchange = async e => {
   document.getElementById("fichas").value =
     Math.floor(gastos / 25) + 1;
 
-  // 🔵 MOSTRAR ACIERTO SOLO AL COMPLETAR LOTE
-  if (d.completed) {
+  // ✅ ACIERTO SOLO UNA VEZ POR LOTE COMPLETO
+  if (d.completed && !loteCerradoMostrado) {
+    loteCerradoMostrado = true;
     acierto.classList.remove("hidden");
     setTimeout(() => {
       acierto.classList.add("hidden");
     }, 2000);
+  }
+
+  if (!d.completed) {
+    loteCerradoMostrado = false;
   }
 
   document.getElementById("fav").innerText =
