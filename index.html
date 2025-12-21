@@ -168,12 +168,12 @@ async function login(){
     document.getElementById("error").innerText=d.error||"FORBIDDEN";
     return;
   }
-  login.classList.add("hidden");
-  s77.classList.remove("hidden");
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
 }
 
 /* SISTEMA */
-nuevoNumero.onchange=async e=>{
+document.getElementById("nuevoNumero").onchange=async e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v))return;
 
@@ -197,22 +197,22 @@ nuevoNumero.onchange=async e=>{
   }
 
   const total=d.favoritos.length+d.explosivos.length;
-  total.value=total;
+  document.getElementById("total").value=total;
 
   gastos+=total;
-  gastos.value=gastos;
+  document.getElementById("gastos").value=gastos;
 
   diferencia-=total;
 
   totalAcumulado+=total;
   const fichas=1+Math.floor(totalAcumulado/25);
-  fichas.value=fichas;
+  document.getElementById("fichas").value=fichas;
 
   if(d.completed){
     diferencia+=fichas*36;
   }
 
-  diferencia.value=diferencia;
+  document.getElementById("diferencia").value=diferencia;
   e.target.value="";
 };
 
@@ -232,5 +232,4 @@ function reiniciar(){
 </script>
 
 </body>
-  </html>
-  
+</html>
