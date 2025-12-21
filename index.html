@@ -19,9 +19,8 @@ body{
   border-radius:12px;
   background:black;
 }
-.hidden{display:none}
 
-input,select,button{
+input,button{
   padding:10px;
   border-radius:8px;
   border:none;
@@ -59,19 +58,6 @@ button{
   background:#7fd3ff;
 }
 
-.favoritos{
-  background:green;
-  font-size:26px;
-  padding:15px;
-  border-radius:8px;
-}
-.explosivos{
-  background:red;
-  font-size:48px;
-  padding:15px;
-  border-radius:8px;
-}
-
 .box input{
   width:95px;
   height:52px;
@@ -83,8 +69,7 @@ button{
 
 #total{background:#666;color:white;}
 #gastos{background:black;color:red;}
-#fichas{background:black;color:#00ff66;}
-#diferencia{background:red;color:black;}
+#diferencia{background:black;color:red;}
 </style>
 </head>
 
@@ -92,7 +77,7 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<div class="panel" id="s77">
+<div class="panel">
 
 <h2>ÚLTIMOS 16 NÚMEROS</h2>
 <div class="inputs">
@@ -120,18 +105,10 @@ button{
 
   <div class="box">
     <strong>TOTAL</strong><br>
-    <input id="total" disabled><br><br>
-    <strong>FICHAS</strong><br>
-    <input id="fichas" disabled>
+    <input id="total" disabled>
   </div>
 
 </div>
-
-<h3>FAVORITOS</h3>
-<div class="favoritos" id="fav">—</div>
-
-<h3>EXPLOSIVOS</h3>
-<div class="explosivos" id="exp">—</div>
 
 </div>
 
@@ -158,17 +135,12 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   });
   const d=await r.json();
 
-  document.getElementById("fav").innerText =
-    d.favoritos.length ? d.favoritos.join(", ") : "—";
-  document.getElementById("exp").innerText =
-    d.explosivos.length ? d.explosivos.join(", ") : "—";
-
   if(ultimos.length < 16){
     e.target.value="";
     return;
   }
 
-  // TOTAL actual
+  // TOTAL = cantidad
   const totalActual = d.favoritos.length + d.explosivos.length;
   document.getElementById("total").value = totalActual;
 
@@ -176,16 +148,8 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   gastos += totalActual;
   document.getElementById("gastos").value = gastos;
 
-  // DIFERENCIA = negativo de GASTOS
-  let diferencia = -gastos;
-
-  // si se completa lote, sumar positivo fichas*36
-  if(d.completed){
-    const fichas = parseInt(document.getElementById("fichas").value || "1");
-    diferencia += fichas * 36;
-  }
-
-  document.getElementById("diferencia").value = diferencia;
+  // 🔴 DIFERENCIA = ESPEJO NEGATIVO DE GASTOS
+  document.getElementById("diferencia").value = -gastos;
 
   e.target.value="";
 };
@@ -197,10 +161,9 @@ function reiniciar(){
   total.value="";
   gastos.value="";
   diferencia.value="";
-  fav.innerText="—";
-  exp.innerText="—";
 }
 </script>
 
 </body>
-</html>
+  </html>
+  
