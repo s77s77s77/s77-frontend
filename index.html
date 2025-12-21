@@ -19,8 +19,9 @@ body{
   border-radius:12px;
   background:black;
 }
+.hidden{display:none}
 
-input,button{
+input,select,button{
   padding:10px;
   border-radius:8px;
   border:none;
@@ -32,6 +33,7 @@ button{
   font-weight:bold;
 }
 
+/* ÚLTIMOS 16 */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
@@ -58,6 +60,21 @@ button{
   background:#7fd3ff;
 }
 
+/* RESULTADOS */
+.favoritos{
+  background:green;
+  font-size:26px;
+  padding:15px;
+  border-radius:8px;
+}
+.explosivos{
+  background:red;
+  font-size:48px;
+  padding:15px;
+  border-radius:8px;
+}
+
+/* BOXES */
 .box input{
   width:95px;
   height:52px;
@@ -77,7 +94,30 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<div class="panel">
+<!-- LOGIN -->
+<div class="panel" id="login">
+  <h2>INGRESAR CLAVE</h2>
+  <input id="clave">
+  <br>
+  <button onclick="login()">INGRESAR</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- ADMIN -->
+<div class="panel hidden" id="admin">
+  <h2>ADMINISTRADOR</h2>
+  <input id="nuevaClave" placeholder="Clave usuario">
+  <select id="dias">
+    <option value="1">1 día</option>
+    <option value="7">7 días</option>
+    <option value="30">30 días</option>
+  </select>
+  <br>
+  <button onclick="crearUsuario()">CREAR USUARIO</button>
+</div>
+
+<!-- SISTEMA -->
+<div class="panel hidden" id="s77">
 
 <h2>ÚLTIMOS 16 NÚMEROS</h2>
 <div class="inputs">
@@ -110,6 +150,12 @@ button{
 
 </div>
 
+<h3>FAVORITOS</h3>
+<div class="favoritos" id="fav">—</div>
+
+<h3>EXPLOSIVOS</h3>
+<div class="explosivos" id="exp">—</div>
+
 </div>
 
 <script>
@@ -117,9 +163,43 @@ const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
 let gastos=0;
+let adminClave=null;
 
 const cas=[...document.querySelectorAll(".inputs input")];
 
+/* LOGIN */
+async function login(){
+  const clave=document.getElementById("clave").value;
+  const r=await fetch(API+"/login",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({clave})
+  });
+  const d=await r.json();
+  if(!d.ok){
+    document.getElementById("error").innerText=d.error||"FORBIDDEN";
+    return;
+  }
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
+  if(d.admin){
+    adminClave=clave;
+    document.getElementById("admin").classList.remove("hidden");
+  }
+}
+
+async function crearUsuario(){
+  const nuevaClave=document.getElementById("nuevaClave").value;
+  const dias=document.getElementById("dias").value;
+  await fetch(API+"/crear-usuario",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({adminClave,nuevaClave,dias})
+  });
+  alert("Usuario creado");
+}
+
+/* SISTEMA */
 document.getElementById("nuevoNumero").onchange=async e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v))return;
@@ -135,20 +215,23 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   });
   const d=await r.json();
 
-  if(ultimos.length < 16){
+  document.getElementById("fav").innerText =
+    d.favoritos.length ? d.favoritos.join(", ") : "—";
+  document.getElementById("exp").innerText =
+    d.explosivos.length ? d.explosivos.join(", ") : "—";
+
+  if(ultimos.length<16){
     e.target.value="";
     return;
   }
 
-  // TOTAL = cantidad
-  const totalActual = d.favoritos.length + d.explosivos.length;
-  document.getElementById("total").value = totalActual;
+  const totalActual=d.favoritos.length+d.explosivos.length;
+  document.getElementById("total").value=totalActual;
 
-  // GASTOS acumulativo
-  gastos += totalActual;
-  document.getElementById("gastos").value = gastos;
+  gastos+=totalActual;
+  document.getElementById("gastos").value=gastos;
 
-  // 🔴 DIFERENCIA = ESPEJO NEGATIVO DE GASTOS
+  /* 🔴 DIFERENCIA = ESPEJO NEGATIVO */
   document.getElementById("diferencia").value = -gastos;
 
   e.target.value="";
@@ -161,9 +244,11 @@ function reiniciar(){
   total.value="";
   gastos.value="";
   diferencia.value="";
+  fav.innerText="—";
+  exp.innerText="—";
 }
 </script>
 
 </body>
-  </html>
+      </html>
   
