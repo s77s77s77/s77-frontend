@@ -30,16 +30,16 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-button.general{
-  background:maroon;
-  color:white;
-}
 button.resetGastos{
   width:90px;
   height:50px;
   background:green;
   color:white;
   font-size:16px;
+}
+button.loginBtn{
+  background:maroon;
+  color:white;
 }
 .inputs{
   display:grid;
@@ -106,6 +106,29 @@ button.resetGastos{
 
 <h1>🎡 Sistema Premium S77</h1>
 
+<!-- LOGIN -->
+<div class="panel" id="login">
+  <h2>INGRESAR CLAVE</h2>
+  <input id="clave">
+  <br>
+  <button class="loginBtn" onclick="login()">INGRESAR</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- ADMIN -->
+<div class="panel hidden" id="admin">
+  <h2>ADMINISTRADOR</h2>
+  <input id="nuevaClave" placeholder="Clave usuario">
+  <select id="dias">
+    <option value="1">1 día</option>
+    <option value="7">7 días</option>
+    <option value="30">30 días</option>
+  </select>
+  <br>
+  <button class="loginBtn" onclick="crearUsuario()">CREAR USUARIO</button>
+</div>
+
+<!-- S77 -->
 <div class="panel hidden" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
   <div class="inputs">
@@ -123,24 +146,20 @@ button.resetGastos{
     <div class="col box">
       <div><strong>GASTOS</strong></div>
       <input id="gastos" disabled value="0">
-
-      <!-- 🔴 BOTÓN NUEVO -->
       <button class="resetGastos" onclick="resetGastos()">REINICIAR</button>
     </div>
 
     <!-- CENTRO -->
     <div class="col">
       <input class="nuevo" id="nuevoNumero" type="number">
-      <button class="general" onclick="reiniciar()">REINICIAR</button>
     </div>
 
     <!-- DERECHA -->
     <div class="col box">
       <div><strong>TOTAL</strong></div>
       <input id="total" disabled value="0">
-
       <div><strong>FICHAS</strong></div>
-      <input id="fichas" disabled>
+      <input id="fichas" disabled value="1">
     </div>
 
   </div>
@@ -156,12 +175,49 @@ button.resetGastos{
 const API = "https://s77-backend.onrender.com";
 
 let ultimos = [];
+let adminClave = null;
 let gastos = 0;
 let sistemaActivo = false;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 
-document.getElementById("s77").classList.remove("hidden");
+async function login(){
+  const clave = document.getElementById("clave").value;
+
+  const r = await fetch(API + "/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ clave })
+  });
+
+  const d = await r.json();
+
+  if (!d.ok) {
+    document.getElementById("error").innerText = d.error || "FORBIDDEN";
+    return;
+  }
+
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
+
+  if (d.admin) {
+    adminClave = clave;
+    document.getElementById("admin").classList.remove("hidden");
+  }
+}
+
+async function crearUsuario(){
+  const nuevaClave = document.getElementById("nuevaClave").value;
+  const dias = document.getElementById("dias").value;
+
+  await fetch(API + "/crear-usuario", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ adminClave, nuevaClave, dias })
+  });
+
+  alert("Usuario creado");
+}
 
 document.getElementById("nuevoNumero").onchange = async e => {
   const v = parseInt(e.target.value);
@@ -171,7 +227,7 @@ document.getElementById("nuevoNumero").onchange = async e => {
   if (ultimos.length > 16) ultimos.pop();
   render();
 
-  // activar sistema luego de llenar 16 y entrar uno más
+  // activar sistema tras llenar 16 y entrar uno más
   if (ultimos.length === 16 && !sistemaActivo) {
     sistemaActivo = true;
     e.target.value = "";
@@ -197,7 +253,8 @@ document.getElementById("nuevoNumero").onchange = async e => {
   gastos += total;
   document.getElementById("gastos").value = gastos;
 
-  document.getElementById("fichas").value = total > 36 ? 2 : 1;
+  const fichas = Math.floor(gastos / 25) + 1;
+  document.getElementById("fichas").value = fichas;
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -212,29 +269,13 @@ function render(){
   cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
 }
 
-/* 🔴 REINICIA SOLO GASTOS */
 function resetGastos(){
   gastos = 0;
   document.getElementById("gastos").value = 0;
-}
-
-/* 🔴 REINICIO GENERAL */
-function reiniciar(){
-  ultimos = [];
-  render();
-
-  gastos = 0;
-  sistemaActivo = false;
-
-  document.getElementById("total").value = 0;
-  document.getElementById("gastos").value = 0;
-  document.getElementById("fichas").value = "";
-
-  fav.innerText = "—";
-  exp.innerText = "—";
+  document.getElementById("fichas").value = 1;
 }
 </script>
 
 </body>
-  </html>
+    </html>
   
