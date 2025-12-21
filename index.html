@@ -80,19 +80,7 @@ button.loginBtn{
   gap:20px;
   align-items:start;
   justify-content:center;
-  border-radius:12px;
 }
-
-/* 🔵 ANIMACIÓN CELESTE LOTE COMPLETO */
-@keyframes flashCeleste {
-  0%   { box-shadow:0 0 0 rgba(127,211,255,0); }
-  30%  { box-shadow:0 0 25px rgba(127,211,255,0.9); }
-  100% { box-shadow:0 0 0 rgba(127,211,255,0); }
-}
-.flash-celeste{
-  animation: flashCeleste 0.45s ease-out;
-}
-
 .col{
   display:flex;
   flex-direction:column;
@@ -110,6 +98,26 @@ button.loginBtn{
   font-size:48px;
   padding:15px;
   border-radius:8px;
+}
+
+/* 🔵 BOTÓN ACIERTO */
+#acierto{
+  margin:15px auto 0;
+  width:160px;
+  padding:12px;
+  background:#7fd3ff;
+  color:green;
+  font-size:22px;
+  font-weight:bold;
+  border-radius:10px;
+  animation:pulse 1s ease-in-out infinite;
+}
+
+/* pulsión */
+@keyframes pulse{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.08)}
+  100%{transform:scale(1)}
 }
 </style>
 </head>
@@ -152,9 +160,7 @@ button.loginBtn{
 
   <h3>NUEVO NÚMERO</h3>
 
-  <!-- 🔵 CONTENEDOR QUE DESTELLA -->
-  <div class="control" id="controlPanel">
-
+  <div class="control">
     <div class="col box">
       <div><strong>GASTOS</strong></div>
       <input id="gastos" disabled value="0">
@@ -171,8 +177,10 @@ button.loginBtn{
       <div><strong>FICHAS</strong></div>
       <input id="fichas" disabled value="1">
     </div>
-
   </div>
+
+  <!-- 🔵 AVISO ACIERTO -->
+  <div id="acierto" class="hidden">ACIerto</div>
 
   <h3>FAVORITOS</h3>
   <div class="favoritos" id="fav">—</div>
@@ -190,7 +198,7 @@ let gastos = 0;
 let sistemaActivo = false;
 
 const cas = [...document.querySelectorAll(".inputs input")];
-const controlPanel = document.getElementById("controlPanel");
+const acierto = document.getElementById("acierto");
 
 async function login(){
   const clave = document.getElementById("clave").value;
@@ -265,12 +273,12 @@ document.getElementById("nuevoNumero").onchange = async e => {
   document.getElementById("fichas").value =
     Math.floor(gastos / 25) + 1;
 
-  // 🔵 DESTELLO CELESTE CUANDO SE COMPLETA LOTE
+  // 🔵 MOSTRAR ACIERTO SOLO AL COMPLETAR LOTE
   if (d.completed) {
-    controlPanel.classList.add("flash-celeste");
+    acierto.classList.remove("hidden");
     setTimeout(() => {
-      controlPanel.classList.remove("flash-celeste");
-    }, 450);
+      acierto.classList.add("hidden");
+    }, 2000);
   }
 
   document.getElementById("fav").innerText =
