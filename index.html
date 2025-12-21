@@ -2,114 +2,247 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>S77 – Control de Gastos</title>
+<title>Sistema Premium S77</title>
 
 <style>
 body{
-    font-family: Arial, sans-serif;
-    background:#111;
-    color:#fff;
-    text-align:center;
-    padding:20px;
+  font-family:Arial,sans-serif;
+  background:black;
+  color:#fff;
+  text-align:center;
+  padding:20px;
 }
-
-.contenedor{
-    background:#222;
-    padding:20px;
-    border-radius:10px;
-    max-width:360px;
-    margin:auto;
+.panel{
+  max-width:480px;
+  margin:15px auto;
+  padding:15px;
+  border-radius:12px;
+  background:black;
 }
-
-input{
-    width:100%;
-    padding:10px;
-    margin:8px 0;
-    font-size:20px;
-    text-align:center;
-    border-radius:6px;
-    border:none;
+.hidden{display:none}
+input,select,button{
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin:5px;
 }
-
 button{
-    width:100%;
-    padding:12px;
-    font-size:18px;
-    border:none;
-    border-radius:6px;
-    background:#800020;
-    color:#fff;
-    font-weight:bold;
-    cursor:pointer;
+  background:maroon;
+  color:white;
+  font-weight:bold;
 }
-
-.resultado{
-    margin-top:15px;
-    font-size:22px;
-    padding:10px;
-    background:#000;
-    border-radius:6px;
+.inputs{
+  display:grid;
+  grid-template-columns:repeat(4,70px);
+  gap:12px;
+  justify-content:center;
+}
+.inputs input{
+  width:70px;height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  background:white;
+  color:black;
+}
+.inputs input:first-child{background:#7fd3ff;}
+.nuevo{
+  width:70px;height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  background:#7fd3ff;
+}
+.favoritos{
+  background:green;
+  font-size:26px;
+  padding:15px;
+  border-radius:8px;
+}
+.explosivos{
+  background:red;
+  font-size:48px;
+  padding:15px;
+  border-radius:8px;
+}
+.totalBox input{
+  width:90px;
+  height:50px;
+  font-size:26px;
+  text-align:center;
+  border-radius:8px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Sistema S77</h2>
+<h1>🎡 Sistema Premium S77</h1>
 
-<div class="contenedor">
+<div class="panel" id="login">
+  <h2>INGRESAR CLAVE</h2>
+  <input id="clave">
+  <br>
+  <button onclick="login()">INGRESAR</button>
+  <p id="error" style="color:red;"></p>
+</div>
 
-    <label>Nuevo número</label>
-    <input type="number" id="nuevoNumero">
+<div class="panel hidden" id="admin">
+  <h2>ADMINISTRADOR</h2>
+  <input id="nuevaClave" placeholder="Clave usuario">
+  <select id="dias">
+    <option value="1">1 día</option>
+    <option value="7">7 días</option>
+    <option value="30">30 días</option>
+  </select>
+  <br>
+  <button onclick="crearUsuario()">CREAR USUARIO</button>
+</div>
 
-    <button onclick="agregarNumero()">AGREGAR</button>
+<div class="panel hidden" id="s77">
+  <h2>ÚLTIMOS 16 NÚMEROS</h2>
+  <div class="inputs">
+    <input disabled><input disabled><input disabled><input disabled>
+    <input disabled><input disabled><input disabled><input disabled>
+    <input disabled><input disabled><input disabled><input disabled>
+    <input disabled><input disabled><input disabled><input disabled>
+  </div>
 
-    <div class="resultado">TOTAL: <span id="total">0</span></div>
-    <div class="resultado">GASTOS: <span id="gastos">0</span></div>
-    <div class="resultado">DIFERENCIA: <span id="diferencia">0</span></div>
+  <h3>NUEVO NÚMERO</h3>
 
-    <button onclick="cerrarLote()">CERRAR LOTE</button>
+  <div style="display:flex; justify-content:center; gap:20px; align-items:flex-start;">
+    <div>
+      <input class="nuevo" id="nuevoNumero" type="number">
+      <br>
+      <button onclick="reiniciar()">REINICIAR</button>
+    </div>
 
+    <div class="totalBox">
+      <div><strong>TOTAL</strong></div>
+      <input id="total" disabled>
+
+      <div><strong>GASTOS</strong></div>
+      <input id="gastos" disabled>
+
+      <div><strong>DIFERENCIA</strong></div>
+      <input id="diferencia" disabled>
+
+      <div><strong>FICHAS</strong></div>
+      <input id="fichas" disabled>
+    </div>
+  </div>
+
+  <h3>FAVORITOS</h3>
+  <div class="favoritos" id="fav">—</div>
+
+  <h3>EXPLOSIVOS</h3>
+  <div class="explosivos" id="exp">—</div>
 </div>
 
 <script>
-let total = 0;
-let gastos = 0;
-let diferencia = 0;
-let loteActivo = false;
+const API = "https://s77-backend.onrender.com";
 
-function agregarNumero(){
-    const valor = Number(document.getElementById("nuevoNumero").value);
-    if(valor === 0) return;
+let ultimos = [];
+let adminClave = null;
 
-    // inicia lote si no hay uno activo
-    if(!loteActivo){
-        loteActivo = true;
-        total = 0;
-    }
+let gastos = 0;       // acumula TOTAL
+let diferencia = 0;   // cuenta lotes
 
-    total += valor;
-    gastos += valor; // GASTOS acumula TOTAL en tiempo real
+const cas = [...document.querySelectorAll(".inputs input")];
 
-    document.getElementById("total").innerText = total;
-    document.getElementById("gastos").innerText = gastos;
+async function login(){
+  const clave = document.getElementById("clave").value;
 
-    document.getElementById("nuevoNumero").value = "";
+  const r = await fetch(API + "/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ clave })
+  });
+
+  const d = await r.json();
+
+  if (!d.ok) {
+    document.getElementById("error").innerText = d.error || "FORBIDDEN";
+    return;
+  }
+
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
+
+  if (d.admin) {
+    adminClave = clave;
+    document.getElementById("admin").classList.remove("hidden");
+  }
 }
 
-function cerrarLote(){
-    if(!loteActivo) return;
+async function crearUsuario(){
+  const nuevaClave = document.getElementById("nuevaClave").value;
+  const dias = document.getElementById("dias").value;
 
-    diferencia += 1; // cada lote completo vale 1
-    document.getElementById("diferencia").innerText = diferencia;
+  await fetch(API + "/crear-usuario", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ adminClave, nuevaClave, dias })
+  });
 
-    total = 0;
-    document.getElementById("total").innerText = total;
+  alert("Usuario creado");
+}
 
-    loteActivo = false;
+document.getElementById("nuevoNumero").onchange = async e => {
+  const v = parseInt(e.target.value);
+  if (isNaN(v)) return;
+
+  ultimos.unshift(v);
+  if (ultimos.length > 16) ultimos.pop();
+  render();
+
+  const r = await fetch(API + "/calcular", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ultimos })
+  });
+
+  const d = await r.json();
+
+  // TOTAL = favoritos + explosivos (NO acumula)
+  const total = d.favoritos.length + d.explosivos.length;
+  document.getElementById("total").value = total;
+
+  // GASTOS acumula TOTAL
+  gastos += total;
+  document.getElementById("gastos").value = gastos;
+
+  // DIFERENCIA cuenta lotes completos
+  if (d.completed) {
+    diferencia += 1;
+    document.getElementById("diferencia").value = diferencia;
+  }
+
+  document.getElementById("fichas").value = total > 36 ? 2 : 1;
+
+  document.getElementById("fav").innerText =
+    d.favoritos.length ? d.favoritos.join(", ") : "—";
+
+  document.getElementById("exp").innerText =
+    d.explosivos.length ? d.explosivos.join(", ") : "—";
+
+  e.target.value = "";
+};
+
+function render(){
+  cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
+}
+
+function reiniciar(){
+  ultimos = [];
+  render();
+  fav.innerText = "—";
+  exp.innerText = "—";
 }
 </script>
 
 </body>
-  </html>
-  
+      </html>
+      
