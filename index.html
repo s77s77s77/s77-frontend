@@ -186,25 +186,24 @@ nuevoNumero.onchange=async e=>{
   const totalActual=d.favoritos.length+d.explosivos.length;
   totalInput.value=totalActual;
 
-  // 1️⃣ GASTOS acumula
+  // GASTOS acumula
   gastosNum += totalActual;
-  gastosInput.value = gastosNum;
 
-  // 2️⃣ DIFERENCIA espejo REAL
+  // DIFERENCIA espejo negativo
   diferenciaNum = -gastosNum;
 
-  // 3️⃣ FICHAS
+  // FICHAS
   totalAcum += totalActual;
   const fichas = 1 + Math.floor(totalAcum / 25);
   fichasInput.value = fichas;
 
-  // 4️⃣ PREMIO SOLO AL COMPLETAR LOTE
+  // SOLO cambio pedido: reinicio de GASTOS tomando TOTAL
   if(d.completed){
     diferenciaNum += fichas * 36;
-    gastosNum = 0;
-    gastosInput.value = 0;
+    gastosNum = totalActual;   // 👈 CAMBIO ÚNICO
   }
 
+  gastosInput.value = gastosNum;
   diferenciaInput.value = diferenciaNum;
   e.target.value="";
 };
@@ -226,4 +225,4 @@ function reiniciar(){
 
 </body>
   </html>
-                        
+  
