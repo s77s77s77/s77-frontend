@@ -101,19 +101,6 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- ADMIN -->
-<div class="panel hidden" id="admin">
-  <h2>ADMINISTRADOR</h2>
-  <input id="nuevaClave" placeholder="Clave usuario">
-  <select id="dias">
-    <option value="1">1 día</option>
-    <option value="7">7 días</option>
-    <option value="30">30 días</option>
-  </select>
-  <br>
-  <button onclick="crearUsuario()">CREAR USUARIO</button>
-</div>
-
 <!-- SISTEMA -->
 <div class="panel hidden" id="s77">
 
@@ -163,9 +150,8 @@ const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
 let gastos=0;
+let diferencia=0;
 let totalAcumulado=0;
-let bonus=0; // ← CLAVE
-let adminClave=null;
 
 const cas=[...document.querySelectorAll(".inputs input")];
 
@@ -182,27 +168,12 @@ async function login(){
     document.getElementById("error").innerText=d.error||"FORBIDDEN";
     return;
   }
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
-  if(d.admin){
-    adminClave=clave;
-    document.getElementById("admin").classList.remove("hidden");
-  }
-}
-
-async function crearUsuario(){
-  const nuevaClave=document.getElementById("nuevaClave").value;
-  const dias=document.getElementById("dias").value;
-  await fetch(API+"/crear-usuario",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({adminClave,nuevaClave,dias})
-  });
-  alert("Usuario creado");
+  login.classList.add("hidden");
+  s77.classList.remove("hidden");
 }
 
 /* SISTEMA */
-document.getElementById("nuevoNumero").onchange=async e=>{
+nuevoNumero.onchange=async e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v))return;
 
@@ -217,38 +188,39 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   });
   const d=await r.json();
 
-  fav.innerText = d.favoritos.length ? d.favoritos.join(", ") : "—";
-  exp.innerText = d.explosivos.length ? d.explosivos.join(", ") : "—";
+  fav.innerText=d.favoritos.length?d.favoritos.join(", "):"—";
+  exp.innerText=d.explosivos.length?d.explosivos.join(", "):"—";
 
-  if(ultimos.length < 16){
+  if(ultimos.length<16){
     e.target.value="";
     return;
   }
 
-  const totalActual = d.favoritos.length + d.explosivos.length;
-  total.value = totalActual;
+  const total=d.favoritos.length+d.explosivos.length;
+  total.value=total;
 
-  gastos += totalActual;
-  gastos.value = gastos;
+  gastos+=total;
+  gastos.value=gastos;
 
-  totalAcumulado += totalActual;
-  const fichas = 1 + Math.floor(totalAcumulado / 25);
-  fichas.value = fichas;
+  diferencia-=total;
+
+  totalAcumulado+=total;
+  const fichas=1+Math.floor(totalAcumulado/25);
+  fichas.value=fichas;
 
   if(d.completed){
-    bonus += fichas * 36;
+    diferencia+=fichas*36;
   }
 
-  diferencia.value = (-gastos) + bonus;
-
+  diferencia.value=diferencia;
   e.target.value="";
 };
 
 function reiniciar(){
   ultimos=[];
   gastos=0;
+  diferencia=0;
   totalAcumulado=0;
-  bonus=0;
   cas.forEach(c=>c.value="");
   total.value="";
   gastos.value="";
@@ -260,5 +232,5 @@ function reiniciar(){
 </script>
 
 </body>
-      </html>
-                                      
+  </html>
+  
