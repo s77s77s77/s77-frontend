@@ -78,7 +78,6 @@ button{
   font-size:28px;
   text-align:center;
   border-radius:8px;
-  font-family:"Segoe UI",Arial,sans-serif;
 }
 
 #total{background:#666;color:white;}
@@ -92,7 +91,6 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- LOGIN -->
 <div class="panel" id="login">
   <h2>INGRESAR CLAVE</h2>
   <input id="clave">
@@ -101,7 +99,6 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- SISTEMA -->
 <div class="panel hidden" id="s77">
 
 <h2>ÚLTIMOS 16 NÚMEROS</h2>
@@ -114,7 +111,7 @@ button{
 
 <h3>NUEVO NÚMERO</h3>
 
-<div style="display:flex;justify-content:center;gap:20px;align-items:flex-start;">
+<div style="display:flex;justify-content:center;gap:20px;">
 
   <div class="box">
     <strong>GASTOS</strong><br>
@@ -155,7 +152,6 @@ let totalAcumulado=0;
 
 const cas=[...document.querySelectorAll(".inputs input")];
 
-/* LOGIN */
 async function login(){
   const clave=document.getElementById("clave").value;
   const r=await fetch(API+"/login",{
@@ -172,8 +168,7 @@ async function login(){
   document.getElementById("s77").classList.remove("hidden");
 }
 
-/* SISTEMA */
-document.getElementById("nuevoNumero").onchange=async e=>{
+nuevoNumero.onchange=async e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v))return;
 
@@ -202,14 +197,14 @@ document.getElementById("nuevoNumero").onchange=async e=>{
   gastos+=total;
   document.getElementById("gastos").value=gastos;
 
-  diferencia-=total;
-
   totalAcumulado+=total;
   const fichas=1+Math.floor(totalAcumulado/25);
   document.getElementById("fichas").value=fichas;
 
+  diferencia = -gastos;
+
   if(d.completed){
-    diferencia+=fichas*36;
+    diferencia += fichas * 36;
   }
 
   document.getElementById("diferencia").value=diferencia;
@@ -232,4 +227,5 @@ function reiniciar(){
 </script>
 
 </body>
-</html>
+  </html>
+  
