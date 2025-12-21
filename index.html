@@ -67,12 +67,16 @@ button{
   padding:15px;
   border-radius:8px;
 }
+
+/* 🔴 CASILLEROS NUMÉRICOS EN BLANCO */
 .totalBox input{
   width:90px;
   height:50px;
   font-size:26px;
   text-align:center;
   border-radius:8px;
+  background:#111;
+  color:white;
 }
 </style>
 </head>
@@ -81,6 +85,7 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
+<!-- LOGIN -->
 <div class="panel" id="login">
   <h2>INGRESAR CLAVE</h2>
   <input id="clave">
@@ -89,6 +94,7 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
+<!-- ADMIN -->
 <div class="panel hidden" id="admin">
   <h2>ADMINISTRADOR</h2>
   <input id="nuevaClave" placeholder="Clave usuario">
@@ -101,6 +107,7 @@ button{
   <button onclick="crearUsuario()">CREAR USUARIO</button>
 </div>
 
+<!-- S77 -->
 <div class="panel hidden" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
   <div class="inputs">
@@ -147,8 +154,8 @@ const API = "https://s77-backend.onrender.com";
 let ultimos = [];
 let adminClave = null;
 
-let gastos = 0;       // acumula TOTAL
-let diferencia = 0;   // cuenta lotes
+let gastos = 0;
+let diferencia = 0;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 
@@ -206,15 +213,12 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   const d = await r.json();
 
-  // TOTAL = favoritos + explosivos (NO acumula)
   const total = d.favoritos.length + d.explosivos.length;
   document.getElementById("total").value = total;
 
-  // GASTOS acumula TOTAL
   gastos += total;
   document.getElementById("gastos").value = gastos;
 
-  // DIFERENCIA cuenta lotes completos
   if (d.completed) {
     diferencia += 1;
     document.getElementById("diferencia").value = diferencia;
@@ -238,11 +242,20 @@ function render(){
 function reiniciar(){
   ultimos = [];
   render();
+
+  gastos = 0;
+  diferencia = 0;
+
+  document.getElementById("total").value = 0;
+  document.getElementById("gastos").value = 0;
+  document.getElementById("diferencia").value = 0;
+  document.getElementById("fichas").value = "";
+
   fav.innerText = "—";
   exp.innerText = "—";
 }
 </script>
 
 </body>
-      </html>
-      
+  </html>
+    
