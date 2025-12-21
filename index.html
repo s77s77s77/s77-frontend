@@ -111,7 +111,6 @@ button.loginBtn{
   border-radius:10px;
   animation:pulse 1s ease-in-out infinite;
 }
-
 @keyframes pulse{
   0%{transform:scale(1)}
   50%{transform:scale(1.08)}
@@ -177,7 +176,6 @@ button.loginBtn{
     </div>
   </div>
 
-  <!-- 🔵 ACIERTO -->
   <div id="acierto" class="hidden">ACIerto</div>
 
   <h3>FAVORITOS</h3>
@@ -194,7 +192,7 @@ let ultimos = [];
 let adminClave = null;
 let gastos = 0;
 let sistemaActivo = false;
-let loteCerradoMostrado = false;
+let completedAnterior = false;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 const acierto = document.getElementById("acierto");
@@ -268,22 +266,14 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   gastos += total;
   document.getElementById("gastos").value = gastos;
+  document.getElementById("fichas").value = Math.floor(gastos / 25) + 1;
 
-  document.getElementById("fichas").value =
-    Math.floor(gastos / 25) + 1;
-
-  // ✅ ACIERTO SOLO UNA VEZ POR LOTE COMPLETO
-  if (d.completed && !loteCerradoMostrado) {
-    loteCerradoMostrado = true;
+  // ✅ DETECCIÓN POR FLANCO — FIABLE
+  if (d.completed === true && completedAnterior === false) {
     acierto.classList.remove("hidden");
-    setTimeout(() => {
-      acierto.classList.add("hidden");
-    }, 2000);
+    setTimeout(() => acierto.classList.add("hidden"), 2000);
   }
-
-  if (!d.completed) {
-    loteCerradoMostrado = false;
-  }
+  completedAnterior = d.completed;
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -306,5 +296,5 @@ function resetGastos(){
 </script>
 
 </body>
-  </html>
-  
+        </html>
+    
