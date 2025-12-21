@@ -152,6 +152,7 @@ let totalAcumulado=0;
 
 const cas=[...document.querySelectorAll(".inputs input")];
 
+/* LOGIN */
 async function login(){
   const clave=document.getElementById("clave").value;
   const r=await fetch(API+"/login",{
@@ -192,14 +193,20 @@ nuevoNumero.onchange=async e=>{
   }
 
   const total=d.favoritos.length+d.explosivos.length;
-  document.getElementById("total").value=total;
+  total.value=total;
 
   gastos+=total;
-  document.getElementById("gastos").value=gastos;
+
+  /* 🔴 REINICIO DE GASTOS SOLO AL COMPLETAR LOTE */
+  if(d.completed){
+    gastos=0;
+  }
+
+  gastos.value=gastos;
 
   totalAcumulado+=total;
   const fichas=1+Math.floor(totalAcumulado/25);
-  document.getElementById("fichas").value=fichas;
+  fichas.value=fichas;
 
   diferencia = -gastos;
 
@@ -207,7 +214,7 @@ nuevoNumero.onchange=async e=>{
     diferencia += fichas * 36;
   }
 
-  document.getElementById("diferencia").value=diferencia;
+  diferencia.value=diferencia;
   e.target.value="";
 };
 
