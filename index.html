@@ -98,24 +98,6 @@ button.loginBtn{
   padding:15px;
   border-radius:8px;
 }
-
-/* 🔵 BOTÓN ACIERTO */
-#acierto{
-  margin:15px auto 0;
-  width:160px;
-  padding:12px;
-  background:#7fd3ff;
-  color:green;
-  font-size:22px;
-  font-weight:bold;
-  border-radius:10px;
-  animation:pulse 1s ease-in-out infinite;
-}
-@keyframes pulse{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.08)}
-  100%{transform:scale(1)}
-}
 </style>
 </head>
 
@@ -176,9 +158,6 @@ button.loginBtn{
     </div>
   </div>
 
-  <!-- ACIERTO -->
-  <div id="acierto" class="hidden">ACIerto</div>
-
   <h3>FAVORITOS</h3>
   <div class="favoritos" id="fav">—</div>
 
@@ -194,11 +173,7 @@ let adminClave = null;
 let gastos = 0;
 let sistemaActivo = false;
 
-/* 🔑 contador anterior de backend */
-let lastCompletedCount = 0;
-
 const cas = [...document.querySelectorAll(".inputs input")];
-const acierto = document.getElementById("acierto");
 
 async function login(){
   const clave = document.getElementById("clave").value;
@@ -246,7 +221,6 @@ document.getElementById("nuevoNumero").onchange = async e => {
   if (ultimos.length > 16) ultimos.pop();
   render();
 
-  /* activar sistema tras llenar 16 + 1 ingreso */
   if (ultimos.length === 16 && !sistemaActivo) {
     sistemaActivo = true;
     e.target.value = "";
@@ -270,18 +244,9 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   gastos += total;
   document.getElementById("gastos").value = gastos;
+
   document.getElementById("fichas").value =
     Math.floor(gastos / 25) + 1;
-
-  /* 🔔 AVISO FIABLE POR CADA LOTE */
-  if (typeof d.completedCount === "number" &&
-      d.completedCount > lastCompletedCount) {
-
-    acierto.classList.remove("hidden");
-    setTimeout(() => acierto.classList.add("hidden"), 2000);
-
-    lastCompletedCount = d.completedCount;
-  }
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -304,5 +269,5 @@ function resetGastos(){
 </script>
 
 </body>
-    </html>
+  </html>
   
