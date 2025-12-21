@@ -163,6 +163,7 @@ const API="https://s77-backend.onrender.com";
 
 let ultimos=[];
 let gastos=0;
+let totalAcumulado=0;
 let adminClave=null;
 
 const cas=[...document.querySelectorAll(".inputs input")];
@@ -225,21 +226,22 @@ document.getElementById("nuevoNumero").onchange=async e=>{
     return;
   }
 
-  // TOTAL actual
   const totalActual = d.favoritos.length + d.explosivos.length;
   document.getElementById("total").value = totalActual;
 
-  // GASTOS acumulativo
   gastos += totalActual;
   document.getElementById("gastos").value = gastos;
 
-  // DIFERENCIA = espejo negativo
+  totalAcumulado += totalActual;
+  const fichas = 1 + Math.floor(totalAcumulado / 25);
+  document.getElementById("fichas").value = fichas;
+
   let diferencia = -gastos;
 
-  // SOLO si se completa un lote → sumar FICHAS * 36
   if(d.completed){
-    const fichas = parseInt(document.getElementById("fichas").value || "1");
     diferencia += fichas * 36;
+    gastos = 0;
+    totalAcumulado = 0;
   }
 
   document.getElementById("diferencia").value = diferencia;
@@ -250,9 +252,11 @@ document.getElementById("nuevoNumero").onchange=async e=>{
 function reiniciar(){
   ultimos=[];
   gastos=0;
+  totalAcumulado=0;
   cas.forEach(c=>c.value="");
   total.value="";
   gastos.value="";
+  fichas.value="";
   diferencia.value="";
   fav.innerText="—";
   exp.innerText="—";
@@ -260,5 +264,5 @@ function reiniciar(){
 </script>
 
 </body>
-  </html>
-  
+                                    </html>
+                    
