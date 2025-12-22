@@ -13,7 +13,7 @@ body{
   padding:20px;
 }
 .panel{
-  max-width:520px;
+  max-width:560px;
   margin:15px auto;
   padding:15px;
   border-radius:12px;
@@ -30,7 +30,7 @@ button{
   font-weight:bold;
 }
 button.resetGastos{
-  width:90px;
+  width:100px;
   height:50px;
   background:green;
   color:white;
@@ -65,7 +65,7 @@ button.loginBtn{
   background:#7fd3ff;
 }
 .box input{
-  width:90px;
+  width:100px;
   height:50px;
   font-size:26px;
   text-align:center;
@@ -140,19 +140,27 @@ button.loginBtn{
   <h3>NUEVO NÚMERO</h3>
 
   <div class="control">
+    <!-- IZQUIERDA -->
     <div class="col box">
       <div><strong>GASTOS</strong></div>
       <input id="gastos" disabled value="0">
-      <button class="resetGastos" onclick="resetGastos()">REINICIAR</button>
+
+      <div><strong>JOTA</strong></div>
+      <input id="jota" disabled value="0">
+
+      <button class="resetGastos" onclick="resetTodo()">REINICIAR</button>
     </div>
 
+    <!-- CENTRO -->
     <div class="col">
       <input class="nuevo" id="nuevoNumero" type="number">
     </div>
 
+    <!-- DERECHA -->
     <div class="col box">
       <div><strong>TOTAL</strong></div>
       <input id="total" disabled value="0">
+
       <div><strong>FICHAS</strong></div>
       <input id="fichas" disabled value="1">
     </div>
@@ -170,8 +178,8 @@ const API = "https://s77-backend.onrender.com";
 
 let ultimos = [];
 let adminClave = null;
-let gastos = 0;
 let sistemaActivo = false;
+let jota = 0;
 
 const cas = [...document.querySelectorAll(".inputs input")];
 
@@ -242,11 +250,19 @@ document.getElementById("nuevoNumero").onchange = async e => {
   const total = d.favoritos.length + d.explosivos.length;
   document.getElementById("total").value = total;
 
-  gastos += total;
+  const fichasActual = parseInt(document.getElementById("fichas").value, 10);
+
+  // GASTOS = TOTAL × FICHAS (actual)
+  const gastos = total * fichasActual;
   document.getElementById("gastos").value = gastos;
 
-  document.getElementById("fichas").value =
-    Math.floor(gastos / 25) + 1;
+  // JOTA acumula GASTOS
+  jota += gastos;
+  document.getElementById("jota").value = jota;
+
+  // FICHAS por segmentos de 25 sobre JOTA
+  const fichas = Math.floor(jota / 25) + 1;
+  document.getElementById("fichas").value = fichas;
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -261,10 +277,11 @@ function render(){
   cas.forEach((c,i)=>c.value = ultimos[i] ?? "");
 }
 
-function resetGastos(){
-  gastos = 0;
+function resetTodo(){
   document.getElementById("gastos").value = 0;
+  document.getElementById("jota").value = 0;
   document.getElementById("fichas").value = 1;
+  jota = 0;
 }
 </script>
 
