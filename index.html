@@ -66,9 +66,14 @@ button.reset{
 }
 .control{
   display:grid;
-  grid-template-columns:auto auto;
-  gap:20px;
+  grid-template-columns:1fr auto 1fr;
+  gap:25px;
   justify-content:center;
+  align-items:center;
+}
+.col{
+  display:flex;
+  flex-direction:column;
   align-items:center;
 }
 .favoritos{
@@ -90,7 +95,7 @@ button.reset{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<div class="panel" id="s77">
+<div class="panel">
 
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
   <div class="inputs">
@@ -103,13 +108,25 @@ button.reset{
   <h3>NUEVO NÚMERO</h3>
 
   <div class="control">
-    <input class="nuevo" id="nuevoNumero" type="number">
 
-    <div class="box">
+    <!-- IZQUIERDA -->
+    <div class="col box">
+      <div><strong>FICHAS</strong></div>
+      <input id="FICHAS" disabled value="1">
+    </div>
+
+    <!-- CENTRO -->
+    <div class="col">
+      <input class="nuevo" id="nuevoNumero" type="number">
+    </div>
+
+    <!-- DERECHA -->
+    <div class="col box">
       <div><strong>E</strong></div>
       <input id="E" disabled value="0">
       <button class="reset" onclick="reiniciar()">REINICIAR</button>
     </div>
+
   </div>
 
   <h3>FAVORITOS</h3>
@@ -118,12 +135,12 @@ button.reset{
   <h3>EXPLOSIVOS</h3>
   <div class="explosivos" id="exp">—</div>
 
-  <!-- 🔒 CASILLEROS INTERNOS (OCULTOS) -->
+  <!-- 🔒 CASILLEROS INTERNOS OCULTOS -->
   <div class="hidden">
-    <input id="A" disabled>
-    <input id="B" disabled>
-    <input id="C" disabled>
-    <input id="D" disabled>
+    <input id="A">
+    <input id="B">
+    <input id="C">
+    <input id="D">
   </div>
 
 </div>
@@ -167,11 +184,11 @@ document.getElementById("nuevoNumero").onchange = async e => {
   const A = d.favoritos.length + d.explosivos.length;
   document.getElementById("A").value = A;
 
-  // B (acumulador)
+  // B acumula A
   B += A;
   document.getElementById("B").value = B;
 
-  // C (segmentos de 25 sobre B)
+  // C por segmentos de 25 sobre B (interno)
   const C = Math.floor(B / 25) + 1;
   document.getElementById("C").value = C;
 
@@ -179,9 +196,13 @@ document.getElementById("nuevoNumero").onchange = async e => {
   const D = A * C;
   document.getElementById("D").value = D;
 
-  // E (acumulador visible)
+  // E acumula D (VISIBLE)
   E += D;
   document.getElementById("E").value = E;
+
+  // FICHAS desde E
+  document.getElementById("FICHAS").value =
+    Math.floor(E / 25) + 1;
 
   document.getElementById("fav").innerText =
     d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -202,9 +223,10 @@ function reiniciar(){
   document.getElementById("C").value = 1;
   document.getElementById("D").value = 0;
   document.getElementById("E").value = 0;
+  document.getElementById("FICHAS").value = 1;
 }
 </script>
 
 </body>
-    </html>
+  </html>
   
