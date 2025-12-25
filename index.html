@@ -36,7 +36,6 @@ button{
   font-weight:bold;
 }
 
-/* 16 iniciales */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
@@ -55,15 +54,14 @@ button{
   color:black;
 }
 
-/* 🔹 últimos 5 — más chicos — SIN margen arriba */
+/* últimos 5 */
 .inputs5{
   display:flex;
   flex-direction:column;
   gap:8px;
-  margin:0 !important;
+  margin:0;
   padding:0;
 }
-
 .inputs5 input{
   width:55px;
   height:55px;
@@ -79,34 +77,25 @@ button{
   width:70px;
   height:70px;
   font-size:34px;
-  font-weight:bold;
   text-align:center;
   border:4px solid red;
   background:#7fd3ff;
 }
 
-/* ============================
-   TABLERO: 5 (izquierda) + LOTES (derecha)
-   ============================ */
-
+/* tablero */
 .tablero{
   margin-top:20px;
   display:flex;
   justify-content:center;
-  align-items:flex-start;   /* ← CLAVADOS ARRIBA */
+  align-items:flex-start;
   gap:25px;
 }
 
-/* ============================
-   LOTES (derecha)
-   ============================ */
-
+/* lotes */
 .lotes-grid{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:14px;
-  margin:0 !important;     /* sin márgenes */
-  padding:0;
 }
 
 .lote-box{
@@ -124,6 +113,7 @@ button{
   font-size:22px;
   font-weight:bold;
   text-align:center;
+  letter-spacing:4px;
 }
 
 .lote-caramelos{
@@ -151,18 +141,6 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
-<div class="panel hidden" id="admin">
-  <h2>ADMINISTRADOR</h2>
-  <input id="nuevaClave" placeholder="Clave usuario">
-  <select id="dias">
-    <option value="1">1 día</option>
-    <option value="7">7 días</option>
-    <option value="30">30 días</option>
-  </select>
-  <br>
-  <button onclick="crearUsuario()">CREAR USUARIO</button>
-</div>
-
 <div class="panel hidden" id="s77">
 
   <h3>NUEVO NÚMERO</h3>
@@ -175,7 +153,6 @@ button{
     </div>
   </div>
 
-  <!-- 16 arriba -->
   <div id="zonaNumeros">
     <div class="inputs" id="vista16">
       <input disabled><input disabled><input disabled><input disabled>
@@ -185,7 +162,6 @@ button{
     </div>
   </div>
 
-  <!-- 5 izquierda + LOTES derecha -->
   <div class="tablero">
 
     <div class="inputs5 hidden" id="vista5">
@@ -204,66 +180,73 @@ button{
 
 <script>
 const API = "https://s77-backend.onrender.com";
+
 let ultimos = [];
-let adminClave = null;
 
 const cas16 = [...document.querySelectorAll("#vista16 input")];
-const cas5 = [...document.querySelectorAll("#vista5 input")];
+const cas5  = [...document.querySelectorAll("#vista5 input")];
 
-async function login(){
-  const clave = document.getElementById("clave").value;
-
-  const r = await fetch(API + "/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ clave })
-  });
-
-  const d = await r.json();
-
-  if (!d.ok) {
-    document.getElementById("error").innerText = d.error || "FORBIDDEN";
-    return;
-  }
-
+function login(){
   document.getElementById("login").classList.add("hidden");
   document.getElementById("s77").classList.remove("hidden");
-
-  if (d.admin) {
-    adminClave = clave;
-    document.getElementById("admin").classList.remove("hidden");
-  }
 }
 
-async function crearUsuario(){
-  const nuevaClave = document.getElementById("nuevaClave").value;
-  const dias = document.getElementById("dias").value;
+/* ==============================
+   LOTES (A — F DEL ARCHIVO)
+   ============================== */
 
-  await fetch(API + "/crear-usuario", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ adminClave, nuevaClave, dias })
-  });
+const LOTES = {
+  A: [
+    { pareja:[6,10], busca:[13,36,27] },
+    { pareja:[6,5], busca:[13,36,27] },
+    { pareja:[6,26], busca:[10,33,5] }
+  ],
+  B: [],
+  C: [],
+  D: [],
+  E: [],
+  F: []
+};
 
-  alert("Usuario creado");
-}
+/* estado dinámico */
+const estadoLotes = {};
+Object.keys(LOTES).forEach((k,i)=>{
+  estadoLotes[k] = {
+    activo:false,
+    pareja:null,
+    busca:[],
+    contador:0,
+    slotNumeros: null
+  };
+});
 
-document.getElementById("nuevoNumero").onchange = async e => {
+const zona = document.getElementById("zonaLotes");
+let loteIndex = 0;
+
+Object.keys(LOTES).forEach(lote =>{
+  const row = document.createElement("div");
+  row.className = "lote-box";
+  row.innerHTML = `
+    <input class="lote-numeros" id="lote_nums_${lote}">
+    <input class="lote-caramelos" id="lote_car_${lote}">
+  `;
+  zona.appendChild(row);
+  estadoLotes[lote].slotNumeros = document.getElementById(`lote_nums_${lote}`);
+});
+
+/* ==============================
+   MOTOR PRINCIPAL
+   ============================== */
+
+document.getElementById("nuevoNumero").onchange = e =>{
   const v = parseInt(e.target.value);
-  if (isNaN(v)) return;
+  if(isNaN(v)) return;
 
   ultimos.unshift(v);
-  if (ultimos.length > 16) ultimos.pop();
+  if(ultimos.length > 16) ultimos.pop();
 
   render();
-
-  if (ultimos.length >= 16){
-    await fetch(API + "/calcular", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ultimos })
-    });
-  }
+  controlarLotes();
 
   e.target.value = "";
 };
@@ -271,12 +254,11 @@ document.getElementById("nuevoNumero").onchange = async e => {
 function render(){
   cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
 
-  if (ultimos.length >= 16){
+  if(ultimos.length >= 16){
     const vista16 = document.getElementById("vista16");
-    const vista5 = document.getElementById("vista5");
+    const vista5  = document.getElementById("vista5");
 
-    if (vista16) vista16.remove();
-
+    if(vista16) vista16.remove();
     vista5.classList.remove("hidden");
 
     const ult5 = ultimos.slice(0,5);
@@ -284,27 +266,73 @@ function render(){
   }
 }
 
-function reiniciar(){
-  ultimos = [];
-  location.reload();
+/* ==============================
+   ACTIVACIÓN SEGÚN TUS REGLAS
+   ============================== */
+
+function controlarLotes(){
+
+  Object.keys(LOTES).forEach(lote=>{
+
+    const st = estadoLotes[lote];
+
+    // si está activo → revisar cancelación por regla
+    if(st.activo){
+      st.contador++;
+
+      const pos1 = ultimos.indexOf(st.pareja[0]);
+      const pos2 = ultimos.indexOf(st.pareja[1]);
+
+      // si ya ninguno está dentro de 0..7 → cancelar
+      if( (pos1 === -1 || pos1 > 7) && (pos2 === -1 || pos2 > 7) ){
+        st.activo = false;
+        st.slotNumeros.value = "";
+        return;
+      }
+
+      // si llegó a 8 tiradas → termina
+      if(st.contador >= 8){
+        st.activo = false;
+        st.slotNumeros.value = "";
+      }
+
+      return;
+    }
+
+    // si NO está activo → buscar si alguna pareja debe activarse
+    for(const p of LOTES[lote]){
+
+      const pos1 = ultimos.indexOf(p.pareja[0]);
+      const pos2 = ultimos.indexOf(p.pareja[1]);
+
+      if(pos1 === -1 || pos2 === -1) continue;
+
+      const dist = Math.abs(pos1 - pos2);
+
+      const unoEnPrimerosOcho =
+        (pos1 >=0 && pos1 <=7) ||
+        (pos2 >=0 && pos2 <=7);
+
+      if(dist <= 8 && unoEnPrimerosOcho){
+
+        st.activo = true;
+        st.pareja = p.pareja;
+        st.busca  = p.busca;
+        st.contador = 0;
+
+        st.slotNumeros.value = p.busca.join(" ");
+        break;
+      }
+    }
+
+  });
+
 }
 
-/* LOTES — solo cajas */
-const zona = document.getElementById("zonaLotes");
-
-for(let i=0;i<16;i++){
-  const row = document.createElement("div");
-  row.className = "lote-box";
-
-  row.innerHTML = `
-    <input class="lote-numeros" id="lote_nums_${i}" disabled>
-    <input class="lote-caramelos" id="lote_car_${i}" disabled>
-  `;
-
-  zona.appendChild(row);
+function reiniciar(){
+  location.reload();
 }
 </script>
 
 </body>
-        </html>
-                                        
+</html>
