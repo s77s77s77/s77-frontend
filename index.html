@@ -43,8 +43,7 @@ button{
   justify-content:center;
 }
 
-.inputs input,
-.inputs5 input{
+.inputs input{
   width:70px;
   height:70px;
   font-size:34px;
@@ -55,11 +54,24 @@ button{
   color:black;
 }
 
+/* 🔹 NUEVO: últimos 5 en columna izquierda */
 .inputs5{
   display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:10px;
+  flex-direction:column;
+  align-items:flex-start;      /* margen izquierdo */
+  gap:10px;
+  margin-top:15px;
+}
+
+.inputs5 input{
+  width:70px;
+  height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  background:white;
+  color:black;
 }
 
 .nuevo{
@@ -73,21 +85,13 @@ button{
 }
 
 /* ======================
-   LOTES — POSICIÓN CORRECTA
+   LOTES — POSICIÓN
    ====================== */
-
-/*
-  👉 Truco correcto:
-
-  - el contenedor mide SOLO lo que necesita
-  - se centra porque es inline-block dentro del panel
-  - ya no fijamos anchos
-*/
 
 .lotes-wrapper{
   margin-top:25px;
-  display:inline-block;   /* clave */
-  text-align:left;        /* para que adentro no quede centrado */
+  display:inline-block;
+  text-align:left;
 }
 
 .lotes-grid{
@@ -156,8 +160,17 @@ button{
 <!-- S77 -->
 <div class="panel hidden" id="s77">
 
-  <h2>ÚLTIMOS NÚMEROS</h2>
+  <h3>NUEVO NÚMERO</h3>
 
+  <div style="display:flex; justify-content:center; gap:20px;">
+    <div>
+      <input class="nuevo" id="nuevoNumero" type="number">
+      <br>
+      <button onclick="reiniciar()">REINICIAR</button>
+    </div>
+  </div>
+
+  <!-- 🔹 LOS 16 ARRIBA DE TODO -->
   <div id="zonaNumeros">
 
     <div class="inputs" id="vista16">
@@ -167,6 +180,7 @@ button{
       <input disabled><input disabled><input disabled><input disabled>
     </div>
 
+    <!-- 🔹 LOS 5 AHORA VERTICALES IZQUIERDA -->
     <div class="inputs5 hidden" id="vista5">
       <input disabled>
       <input disabled>
@@ -175,16 +189,6 @@ button{
       <input disabled>
     </div>
 
-  </div>
-
-  <h3>NUEVO NÚMERO</h3>
-
-  <div style="display:flex; justify-content:center; gap:20px; align-items:flex-start;">
-    <div>
-      <input class="nuevo" id="nuevoNumero" type="number">
-      <br>
-      <button onclick="reiniciar()">REINICIAR</button>
-    </div>
   </div>
 
   <!-- LOTES -->
@@ -274,6 +278,8 @@ function render(){
     vista5.classList.remove("hidden");
 
     const ult5 = ultimos.slice(0,5);
+
+    // 🔹 El primero (arriba) es el más nuevo
     cas5.forEach((c,i)=> c.value = ult5[i] ?? "");
   }
 }
@@ -283,8 +289,7 @@ function reiniciar(){
   location.reload();
 }
 
-/* LOTES — SOLO CAJAS (sin valores aún) */
-
+/* LOTES — SOLO CAJAS */
 const zona = document.getElementById("zonaLotes");
 
 for(let i=0;i<16;i++){
