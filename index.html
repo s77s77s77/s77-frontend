@@ -14,7 +14,7 @@ body{
 }
 
 .panel{
-  max-width: 480px;
+  max-width: 520px;
   margin: 15px auto;
   padding: 15px;
   border-radius: 12px;
@@ -43,7 +43,8 @@ button{
   justify-content:center;
 }
 
-.inputs input{
+.inputs input,
+.inputs5 input{
   width:70px;
   height:70px;
   font-size:34px;
@@ -52,6 +53,13 @@ button{
   border:4px solid red;
   background:white;
   color:black;
+}
+
+.inputs5{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:10px;
 }
 
 .nuevo{
@@ -116,13 +124,24 @@ button{
 
 <!-- S77 -->
 <div class="panel hidden" id="s77">
-  <h2>ÚLTIMOS 16 NÚMEROS</h2>
 
-  <div class="inputs">
+  <h2>ÚLTIMOS NÚMEROS</h2>
+
+  <!-- 👇 Vista con 16 casilleros (solo hasta cargar el 16) -->
+  <div class="inputs" id="vista16">
     <input disabled><input disabled><input disabled><input disabled>
     <input disabled><input disabled><input disabled><input disabled>
     <input disabled><input disabled><input disabled><input disabled>
     <input disabled><input disabled><input disabled><input disabled>
+  </div>
+
+  <!-- 👇 Vista con 5 casilleros (desde el número 16 en adelante) -->
+  <div class="inputs5 hidden" id="vista5">
+    <input disabled>
+    <input disabled>
+    <input disabled>
+    <input disabled>
+    <input disabled>
   </div>
 
   <h3>NUEVO NÚMERO</h3>
@@ -156,7 +175,8 @@ let ultimos = [];
 let adminClave = null;
 let totalAcumulado = 0;
 
-const cas = [...document.querySelectorAll(".inputs input")];
+const cas16 = [...document.querySelectorAll("#vista16 input")];
+const cas5  = [...document.querySelectorAll("#vista5 input")];
 
 async function login(){
   const clave = document.getElementById("clave").value;
@@ -213,9 +233,7 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   const d = await r.json();
 
-  if (d.completed) {
-    totalAcumulado = 0;
-  }
+  if (d.completed) totalAcumulado = 0;
 
   totalAcumulado += d.favoritos.length + d.explosivos.length;
 
@@ -231,33 +249,41 @@ document.getElementById("nuevoNumero").onchange = async e => {
   e.target.value = "";
 };
 
-/* ⭐⭐ NUEVA FUNCIÓN DE RENDER — SOLO MUESTRA LOS ÚLTIMOS 5 ⭐⭐ */
+/* ⭐ LÓGICA DE VISUALIZACIÓN ⭐ */
 function render(){
-  // ultimos[0] = el más nuevo
-  const visibles = ultimos.slice(0, 5);
 
-  cas.forEach((c, i) => {
-    // si está entre los últimos 5 → mostrar
-    if (i < visibles.length) {
-      c.value = visibles[i];
-    } else {
-      // los demás quedan vacíos
-      c.value = "";
-    }
-  });
+  // siempre llenamos la vista de 16 (para verlos al principio)
+  cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
+
+  // cuando llegamos a 16 → cambiamos de vista
+  if (ultimos.length >= 16){
+
+    // ocultar 16 — mostrar 5
+    document.getElementById("vista16").classList.add("hidden");
+    document.getElementById("vista5").classList.remove("hidden");
+
+    const ult5 = ultimos.slice(0,5);
+    cas5.forEach((c,i)=> c.value = ult5[i] ?? "");
+  }
 }
 
 function reiniciar(){
   ultimos = [];
-  render();
-  fav.innerText = "—";
-  exp.innerText = "—";
   totalAcumulado = 0;
+
   document.getElementById("total").value = "";
   document.getElementById("fichas").value = "";
+  fav.innerText = "—";
+  exp.innerText = "—";
+
+  // volvemos a mostrar los 16
+  document.getElementById("vista5").classList.add("hidden");
+  document.getElementById("vista16").classList.remove("hidden");
+
+  render();
 }
 </script>
 
 </body>
-                                      </html>
+  </html>
   
