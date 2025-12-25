@@ -127,10 +127,9 @@ button{
 
   <h2>ÚLTIMOS NÚMEROS</h2>
 
-  <!-- 🔹 Este contenedor es “la zona de números” -->
   <div id="zonaNumeros">
 
-    <!-- 👉 Vista inicial: 16 casilleros -->
+    <!-- Vista inicial: 16 casilleros -->
     <div class="inputs" id="vista16">
       <input disabled><input disabled><input disabled><input disabled>
       <input disabled><input disabled><input disabled><input disabled>
@@ -138,7 +137,7 @@ button{
       <input disabled><input disabled><input disabled><input disabled>
     </div>
 
-    <!-- 👉 Vista final: solo 5 casilleros (arriba, ocupando el lugar) -->
+    <!-- Vista final: solo 5 casilleros -->
     <div class="inputs5 hidden" id="vista5">
       <input disabled>
       <input disabled>
@@ -254,20 +253,23 @@ document.getElementById("nuevoNumero").onchange = async e => {
   e.target.value = "";
 };
 
-/* ⭐ LÓGICA DE VISUALIZACIÓN ⭐ */
+/* --- VISUALIZACIÓN --- */
 function render(){
 
-  // mientras cargo — siempre muestro los 16
+  // mientras se cargan: se ven los 16
   cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
 
-  // cuando se completan los 16…
+  // cuando ya hay 16…
   if (ultimos.length >= 16){
 
-    // oculto el bloque completo de 16 (libera espacio)
-    document.getElementById("vista16").classList.add("hidden");
+    const vista16 = document.getElementById("vista16");
+    const vista5  = document.getElementById("vista5");
 
-    // muestro el bloque de 5 en su lugar
-    document.getElementById("vista5").classList.remove("hidden");
+    // eliminar definitivamente el bloque de 16 (libera espacio)
+    if (vista16) vista16.remove();
+
+    // mostrar 5 arriba
+    vista5.classList.remove("hidden");
 
     const ult5 = ultimos.slice(0,5);
     cas5.forEach((c,i)=> c.value = ult5[i] ?? "");
@@ -283,14 +285,11 @@ function reiniciar(){
   fav.innerText = "—";
   exp.innerText = "—";
 
-  // vuelvo a estado inicial
-  document.getElementById("vista5").classList.add("hidden");
-  document.getElementById("vista16").classList.remove("hidden");
-
-  render();
+  // volver al estado inicial
+  location.reload();
 }
 </script>
 
 </body>
-             </html>
+  </html>
   
