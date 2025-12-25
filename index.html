@@ -95,43 +95,43 @@ button{
 }
 
 /* ======================
-   BLOQUE LOTES
+   LOTES NUEVA VISUAL
    ====================== */
 
-.lotes-container{
-  margin-top: 25px;
-  display: grid;
-  gap: 10px;
+.lotes-grid{
+  margin-top:25px;
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
 }
 
-.lote-row{
-  display: grid;
-  grid-template-columns: 1fr 80px;
-  align-items: center;
-  gap: 10px;
+.lote-box{
+  display:grid;
+  grid-template-columns: 1fr 70px;
+  gap:10px;
 }
 
 .lote-numeros{
-  height: 55px;
-  border-radius: 10px;
-  background: #111;
-  border: 3px solid #444;
-  color: #fff;
-  font-size: 26px;
-  font-weight: bold;
-  text-align: center;
-  letter-spacing: 6px;
+  height:55px;
+  border-radius:10px;
+  background:#111;
+  border:3px solid #444;
+  color:#fff;
+  font-size:24px;
+  font-weight:bold;
+  text-align:center;
+  letter-spacing:6px;
 }
 
 .lote-caramelos{
-  height: 55px;
-  border-radius: 10px;
-  background: #222;
-  border: 3px solid #888;
-  color: yellow;
-  font-size: 34px;
-  font-weight: bold;
-  text-align: center;
+  height:55px;
+  border-radius:10px;
+  background:#222;
+  border:3px solid #888;
+  color:yellow;
+  font-size:30px;
+  font-weight:bold;
+  text-align:center;
 }
 </style>
 </head>
@@ -168,7 +168,7 @@ button{
   <h2>ÚLTIMOS NÚMEROS</h2>
 
   <div id="zonaNumeros">
-    <!-- Vista inicial: 16 casilleros -->
+
     <div class="inputs" id="vista16">
       <input disabled><input disabled><input disabled><input disabled>
       <input disabled><input disabled><input disabled><input disabled>
@@ -176,7 +176,6 @@ button{
       <input disabled><input disabled><input disabled><input disabled>
     </div>
 
-    <!-- Vista final: solo 5 casilleros -->
     <div class="inputs5 hidden" id="vista5">
       <input disabled>
       <input disabled>
@@ -184,6 +183,7 @@ button{
       <input disabled>
       <input disabled>
     </div>
+
   </div>
 
   <h3>NUEVO NÚMERO</h3>
@@ -205,36 +205,24 @@ button{
   </div>
 
   <!-- ==============================
-       LOTES — VISUAL
+       LOTES — VISUAL (16)
        ============================== -->
 
-  <h3 style="margin-top:25px;">LOTE — BUSQUEDAS & CARAMELOS</h3>
-
-  <div class="lotes-container" id="zonaLotes">
-
-    <div class="lote-row"><input class="lote-numeros" id="loteA_nums" placeholder="Lote A"><input class="lote-caramelos" id="loteA_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteB_nums" placeholder="Lote B"><input class="lote-caramelos" id="loteB_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteC_nums" placeholder="Lote C"><input class="lote-caramelos" id="loteC_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteD_nums" placeholder="Lote D"><input class="lote-caramelos" id="loteD_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteE_nums" placeholder="Lote E"><input class="lote-caramelos" id="loteE_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteF_nums" placeholder="Lote F"><input class="lote-caramelos" id="loteF_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteG_nums" placeholder="Lote G"><input class="lote-caramelos" id="loteG_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteH_nums" placeholder="Lote H"><input class="lote-caramelos" id="loteH_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteI_nums" placeholder="Lote I"><input class="lote-caramelos" id="loteI_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteJ_nums" placeholder="Lote J"><input class="lote-caramelos" id="loteJ_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteK_nums" placeholder="Lote K"><input class="lote-caramelos" id="loteK_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteL_nums" placeholder="Lote L"><input class="lote-caramelos" id="loteL_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteM_nums" placeholder="Lote M"><input class="lote-caramelos" id="loteM_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteN_nums" placeholder="Lote N"><input class="lote-caramelos" id="loteN_car" placeholder="-"></div>
-    <div class="lote-row"><input class="lote-numeros" id="loteO_nums" placeholder="Lote O"><input class="lote-caramelos" id="loteO_car" placeholder="-"></div>
-
+  <div class="lotes-grid" id="zonaLotes">
+    <!-- 16 cajas vacías -->
+    ${Array.from({length:16}).map((_,i)=>`
+      <div class="lote-box">
+        <input class="lote-numeros" id="lote_nums_${i}" disabled placeholder="">
+        <input class="lote-caramelos" id="lote_car_${i}" disabled placeholder="">
+      </div>
+    `).join("")}
   </div>
 
   <h3>FAVORITOS</h3>
   <div class="favoritos" id="fav">—</div>
 
-  <h3>EXPLOSIVOS</h3
-  ><div class="explosivos" id="exp">—</div>
+  <h3>EXPLOSIVOS</h3>
+  <div class="explosivos" id="exp">—</div>
 
 </div>
 
@@ -325,7 +313,6 @@ function render(){
   cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
 
   if (ultimos.length >= 16){
-
     const vista16 = document.getElementById("vista16");
     const vista5 = document.getElementById("vista5");
 
@@ -350,34 +337,36 @@ function reiniciar(){
   location.reload();
 }
 
-/* ============================
-   LOTES — VISUAL (A y B)
-   ============================ */
+/* ======================================================
+   LOTES — ESTRUCTURA + CARAMELos CADA 20
+   ====================================================== */
 
-const LOTES = {
-  A: [
-    { pareja:[6,10], busca:[13,36,27] },
-    { pareja:[6,5],  busca:[13,36,27] },
-    { pareja:[6,24], busca:[13,36,27] }
-  ],
-  B: [
-    { pareja:[7,19], busca:[6,27,13] },
-    { pareja:[7,4],  busca:[6,27,13] },
-    { pareja:[7,15], busca:[6,27,13] }
-  ]
-};
+const LOTES = Array.from({length:16}).map(()=>({
+  activa:null,
+  gasto:0,
+  busca:[]
+}));
 
-function mostrarLotes(){
-  document.getElementById("loteA_nums").value = LOTES.A[0].busca.slice(0,5).join(" ");
-  document.getElementById("loteB_nums").value = LOTES.B[0].busca.slice(0,5).join(" ");
+function setBusqueda(loteIndex, numeros, gastoNuevo){
+  const numerosBox = document.getElementById("lote_nums_"+loteIndex);
+  const carBox = document.getElementById("lote_car_"+loteIndex);
 
-  document.getElementById("loteA_car").value = "";
-  document.getElementById("loteB_car").value = "";
+  LOTES[loteIndex].busca = numeros;
+  LOTES[loteIndex].gasto += gastoNuevo;
+
+  numerosBox.value = numeros.join(" ");
+
+  const caramelos = Math.floor(LOTES[loteIndex].gasto / 20) + 1;
+  carBox.value = caramelos;
 }
 
-mostrarLotes();
+// por ahora demo simple
+// solo para que veas que funciona el cálculo
+setBusqueda(0,[13,36,27],22);  // debería mostrar 2 caramelos
+setBusqueda(1,[6,27,13],5);    // debería mostrar 1 caramelo
+
 </script>
 
 </body>
-                            </html>
-  
+    </html>
+        
