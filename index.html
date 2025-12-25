@@ -23,7 +23,7 @@ body{
 
 .hidden{ display:none }
 
-input,select,button{
+input,button{
   padding:10px;
   border-radius:8px;
   border:none;
@@ -36,7 +36,7 @@ button{
   font-weight:bold;
 }
 
-/* 16 iniciales (arriba) */
+/* 16 iniciales */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
@@ -55,22 +55,22 @@ button{
   color:black;
 }
 
-/* 🔹 Últimos 5 — columna izquierda */
+/* 🔹 últimos 5 — más chicos — SIN margen arriba */
 .inputs5{
   display:flex;
   flex-direction:column;
-  gap:10px;
-  margin:0;              /* <<< importante */
+  gap:8px;
+  margin:0 !important;
   padding:0;
 }
 
 .inputs5 input{
-  width:70px;
-  height:70px;
-  font-size:34px;
+  width:55px;
+  height:55px;
+  font-size:26px;
   font-weight:bold;
   text-align:center;
-  border:4px solid red;
+  border:3px solid red;
   background:white;
   color:black;
 }
@@ -85,27 +85,27 @@ button{
   background:#7fd3ff;
 }
 
-/* ======================
-   TABLERO (5 + LOTES)
-   ====================== */
+/* ============================
+   TABLERO: 5 (izquierda) + LOTES (derecha)
+   ============================ */
 
 .tablero{
   margin-top:20px;
   display:flex;
   justify-content:center;
-  align-items:flex-start;    /* <<< alinear arriba */
+  align-items:flex-start;   /* ← CLAVADOS ARRIBA */
   gap:25px;
 }
 
-/* ======================
-   LOTES
-   ====================== */
+/* ============================
+   LOTES (derecha)
+   ============================ */
 
 .lotes-grid{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:14px;
-  margin:0;                 /* <<< sin desplazamiento */
+  margin:0 !important;     /* sin márgenes */
   padding:0;
 }
 
@@ -121,10 +121,9 @@ button{
   background:#111;
   border:3px solid #444;
   color:#fff;
-  font-size:24px;
+  font-size:22px;
   font-weight:bold;
   text-align:center;
-  letter-spacing:6px;
 }
 
 .lote-caramelos{
@@ -133,7 +132,7 @@ button{
   background:#222;
   border:3px solid #888;
   color:yellow;
-  font-size:30px;
+  font-size:26px;
   font-weight:bold;
   text-align:center;
 }
@@ -144,7 +143,6 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- LOGIN -->
 <div class="panel" id="login">
   <h2>INGRESAR CLAVE</h2>
   <input id="clave">
@@ -153,7 +151,6 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- ADMIN -->
 <div class="panel hidden" id="admin">
   <h2>ADMINISTRADOR</h2>
   <input id="nuevaClave" placeholder="Clave usuario">
@@ -166,7 +163,6 @@ button{
   <button onclick="crearUsuario()">CREAR USUARIO</button>
 </div>
 
-<!-- S77 -->
 <div class="panel hidden" id="s77">
 
   <h3>NUEVO NÚMERO</h3>
@@ -179,22 +175,19 @@ button{
     </div>
   </div>
 
-  <!-- 16 (arriba) -->
+  <!-- 16 arriba -->
   <div id="zonaNumeros">
-
     <div class="inputs" id="vista16">
       <input disabled><input disabled><input disabled><input disabled>
       <input disabled><input disabled><input disabled><input disabled>
       <input disabled><input disabled><input disabled><input disabled>
       <input disabled><input disabled><input disabled><input disabled>
     </div>
-
   </div>
 
-  <!-- 🔹 5 + LOTES -->
+  <!-- 5 izquierda + LOTES derecha -->
   <div class="tablero">
 
-    <!-- Últimos 5 -->
     <div class="inputs5 hidden" id="vista5">
       <input disabled>
       <input disabled>
@@ -203,10 +196,7 @@ button{
       <input disabled>
     </div>
 
-    <!-- Lotes -->
-    <div class="lotes-grid" id="zonaLotes">
-      <!-- generado por JS -->
-    </div>
+    <div class="lotes-grid" id="zonaLotes"></div>
 
   </div>
 
@@ -299,7 +289,7 @@ function reiniciar(){
   location.reload();
 }
 
-/* LOTES — SOLO CAJAS */
+/* LOTES — solo cajas */
 const zona = document.getElementById("zonaLotes");
 
 for(let i=0;i<16;i++){
@@ -316,5 +306,5 @@ for(let i=0;i<16;i++){
 </script>
 
 </body>
-  </html>
-  
+        </html>
+                                        
