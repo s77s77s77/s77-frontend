@@ -229,26 +229,30 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   render();
 
-  const r = await fetch(API + "/calcular", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ultimos })
-  });
+  /* ⭐⭐ NUEVA LÓGICA: EL SISTEMA ARRANCA DESDE EL 16 ⭐⭐ */
+  if (ultimos.length >= 16){
 
-  const d = await r.json();
+    const r = await fetch(API + "/calcular", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ultimos })
+    });
 
-  if (d.completed) totalAcumulado = 0;
+    const d = await r.json();
 
-  totalAcumulado += d.favoritos.length + d.explosivos.length;
+    if (d.completed) totalAcumulado = 0;
 
-  document.getElementById("total").value = totalAcumulado;
-  document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
+    totalAcumulado += d.favoritos.length + d.explosivos.length;
 
-  document.getElementById("fav").innerText =
-    d.favoritos.length ? d.favoritos.join(", ") : "—";
+    document.getElementById("total").value = totalAcumulado;
+    document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
 
-  document.getElementById("exp").innerText =
-    d.explosivos.length ? d.explosivos.join(", ") : "—";
+    document.getElementById("fav").innerText =
+      d.favoritos.length ? d.favoritos.join(", ") : "—";
+
+    document.getElementById("exp").innerText =
+      d.explosivos.length ? d.explosivos.join(", ") : "—";
+  }
 
   e.target.value = "";
 };
@@ -291,5 +295,5 @@ function reiniciar(){
 </script>
 
 </body>
-  </html>
-  
+    </html>
+        
