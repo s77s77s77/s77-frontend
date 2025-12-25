@@ -72,21 +72,22 @@ button{
   background:#7fd3ff;
 }
 
-/* ============================
-   LOTES — AJUSTE DE POSICIÓN
-   ============================ */
+/* ======================
+   LOTES — POSICIÓN CORRECTA
+   ====================== */
 
 /*
-  Hacemos que el bloque completo tenga un ancho fijo,
-  y lo centramos — así el espacio del medio queda
-  alineado EXACTO bajo el botón.
+  👉 Truco correcto:
+
+  - el contenedor mide SOLO lo que necesita
+  - se centra porque es inline-block dentro del panel
+  - ya no fijamos anchos
 */
 
 .lotes-wrapper{
   margin-top:25px;
-  width: 360px;         /* <- AJUSTA EL CENTRO */
-  margin-left:auto;
-  margin-right:auto;
+  display:inline-block;   /* clave */
+  text-align:left;        /* para que adentro no quede centrado */
 }
 
 .lotes-grid{
@@ -282,9 +283,7 @@ function reiniciar(){
   location.reload();
 }
 
-/* ======================================================
-   LOTES — SOLO ESTRUCTURA
-   ====================================================== */
+/* LOTES — SOLO CAJAS (sin valores aún) */
 
 const zona = document.getElementById("zonaLotes");
 
@@ -302,5 +301,5 @@ for(let i=0;i<16;i++){
 </script>
 
 </body>
-        </html>
-  
+    </html>
+        
