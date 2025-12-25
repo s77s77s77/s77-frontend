@@ -76,12 +76,12 @@ button{
    LOTES — VISUAL
    ====================== */
 
-/* contenedor más angosto, centrado bajo el botón */
+/* ahora alineado a la izquierda del panel, no centrado */
 .lotes-wrapper{
   margin-top:25px;
-  width: 420px;        /* controla dónde cae el centro */
-  margin-left:auto;
-  margin-right:auto;
+  width:100%;
+  display:flex;
+  justify-content:flex-start;
 }
 
 .lotes-grid{
@@ -181,7 +181,7 @@ button{
     </div>
   </div>
 
-  <!-- LOTES (16) -->
+  <!-- LOTES -->
   <div class="lotes-wrapper">
     <div class="lotes-grid" id="zonaLotes">
       <!-- se genera por JS -->
@@ -245,8 +245,6 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   render();
 
-  // seguimos usando el backend igual para el resto,
-  // pero ya sin total / favoritos / explosivos en pantalla
   if (ultimos.length >= 16){
     await fetch(API + "/calcular", {
       method: "POST",
@@ -280,12 +278,11 @@ function reiniciar(){
 }
 
 /* ======================================================
-   LOTES — GENERACIÓN + CÁLCULO DE CARAMELOS
+   LOTES — SOLO ESTRUCTURA (sin demo)
    ====================================================== */
 
 const zona = document.getElementById("zonaLotes");
 
-// crear 16 casilleros
 for(let i=0;i<16;i++){
   const row = document.createElement("div");
   row.className = "lote-box";
@@ -304,7 +301,7 @@ const LOTES = Array.from({length:16}).map(()=>({
   busca:[]
 }));
 
-// regla: base 1, +1 cada 20
+// queda lista para usar más adelante:
 function setBusqueda(loteIndex, numeros, gastoNuevo){
   const n = document.getElementById("lote_nums_"+loteIndex);
   const c = document.getElementById("lote_car_"+loteIndex);
@@ -317,13 +314,8 @@ function setBusqueda(loteIndex, numeros, gastoNuevo){
   const caramelos = Math.floor(LOTES[loteIndex].gasto / 20) + 1;
   c.value = caramelos;
 }
-
-/* DEMO visual — podés borrar cuando quieras */
-setBusqueda(0,[13,36,27],22);
-setBusqueda(1,[6,27,13],5);
-
 </script>
 
 </body>
-        </html>
+                                        </html>
   
