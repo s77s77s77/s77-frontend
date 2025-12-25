@@ -198,24 +198,12 @@ button{
     <div class="totalBox">
       <div><strong>TOTAL</strong></div>
       <input id="total" disabled>
-      <br><br>
-      <div><strong>FICHAS</strong></div>
-      <input id="fichas" disabled>
     </div>
   </div>
 
-  <!-- ==============================
-       LOTES — VISUAL (16)
-       ============================== -->
-
+  <!-- LOTES — 16 CAJAS (2 columnas) -->
   <div class="lotes-grid" id="zonaLotes">
-    <!-- 16 cajas vacías -->
-    ${Array.from({length:16}).map((_,i)=>`
-      <div class="lote-box">
-        <input class="lote-numeros" id="lote_nums_${i}" disabled placeholder="">
-        <input class="lote-caramelos" id="lote_car_${i}" disabled placeholder="">
-      </div>
-    `).join("")}
+    <!-- se rellenan con JS -->
   </div>
 
   <h3>FAVORITOS</h3>
@@ -297,7 +285,6 @@ document.getElementById("nuevoNumero").onchange = async e => {
     totalAcumulado += d.favoritos.length + d.explosivos.length;
 
     document.getElementById("total").value = totalAcumulado;
-    document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
 
     document.getElementById("fav").innerText =
       d.favoritos.length ? d.favoritos.join(", ") : "—";
@@ -330,7 +317,6 @@ function reiniciar(){
   totalAcumulado = 0;
 
   document.getElementById("total").value = "";
-  document.getElementById("fichas").value = "";
   fav.innerText = "—";
   exp.innerText = "—";
 
@@ -338,15 +324,32 @@ function reiniciar(){
 }
 
 /* ======================================================
-   LOTES — ESTRUCTURA + CARAMELos CADA 20
+   LOTES — GENERACIÓN + CÁLCULO DE CARAMELOS
    ====================================================== */
 
+// crear 16 casilleros (2 columnas)
+const zona = document.getElementById("zonaLotes");
+
+for(let i=0;i<16;i++){
+  const row = document.createElement("div");
+  row.className = "lote-box";
+
+  row.innerHTML = `
+    <input class="lote-numeros" id="lote_nums_${i}" disabled>
+    <input class="lote-caramelos" id="lote_car_${i}" disabled>
+  `;
+
+  zona.appendChild(row);
+}
+
+// estado de lotes
 const LOTES = Array.from({length:16}).map(()=>({
-  activa:null,
+  activa:false,
   gasto:0,
   busca:[]
 }));
 
+// función para mostrar búsqueda + caramelos
 function setBusqueda(loteIndex, numeros, gastoNuevo){
   const numerosBox = document.getElementById("lote_nums_"+loteIndex);
   const carBox = document.getElementById("lote_car_"+loteIndex);
@@ -356,17 +359,17 @@ function setBusqueda(loteIndex, numeros, gastoNuevo){
 
   numerosBox.value = numeros.join(" ");
 
+  // regla: base 1 — +1 cada 20
   const caramelos = Math.floor(LOTES[loteIndex].gasto / 20) + 1;
   carBox.value = caramelos;
 }
 
-// por ahora demo simple
-// solo para que veas que funciona el cálculo
-setBusqueda(0,[13,36,27],22);  // debería mostrar 2 caramelos
-setBusqueda(1,[6,27,13],5);    // debería mostrar 1 caramelo
+// DEMO — solo para probar visual
+setBusqueda(0,[13,36,27],22);
+setBusqueda(1,[6,27,13],5);
 
 </script>
 
 </body>
-    </html>
+      </html>
         
