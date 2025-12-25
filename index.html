@@ -72,34 +72,19 @@ button{
   background:#7fd3ff;
 }
 
-.favoritos{
-  background:green;
-  font-size:26px;
-  padding:15px;
-  border-radius:8px;
-}
-
-.explosivos{
-  background:red;
-  font-size:48px;
-  padding:15px;
-  border-radius:8px;
-}
-
-.totalBox input{
-  width:80px;
-  height:50px;
-  font-size:28px;
-  text-align:center;
-  border-radius:8px;
-}
-
 /* ======================
-   LOTES NUEVA VISUAL
+   LOTES — VISUAL
    ====================== */
 
-.lotes-grid{
+/* contenedor más angosto, centrado bajo el botón */
+.lotes-wrapper{
   margin-top:25px;
+  width: 420px;        /* controla dónde cae el centro */
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.lotes-grid{
   display:grid;
   grid-template-columns: 1fr 1fr;
   gap:14px;
@@ -194,23 +179,14 @@ button{
       <br>
       <button onclick="reiniciar()">REINICIAR</button>
     </div>
+  </div>
 
-    <div class="totalBox">
-      <div><strong>TOTAL</strong></div>
-      <input id="total" disabled>
+  <!-- LOTES (16) -->
+  <div class="lotes-wrapper">
+    <div class="lotes-grid" id="zonaLotes">
+      <!-- se genera por JS -->
     </div>
   </div>
-
-  <!-- LOTES — 16 CAJAS (2 columnas) -->
-  <div class="lotes-grid" id="zonaLotes">
-    <!-- se rellenan con JS -->
-  </div>
-
-  <h3>FAVORITOS</h3>
-  <div class="favoritos" id="fav">—</div>
-
-  <h3>EXPLOSIVOS</h3>
-  <div class="explosivos" id="exp">—</div>
 
 </div>
 
@@ -218,7 +194,6 @@ button{
 const API = "https://s77-backend.onrender.com";
 let ultimos = [];
 let adminClave = null;
-let totalAcumulado = 0;
 
 const cas16 = [...document.querySelectorAll("#vista16 input")];
 const cas5 = [...document.querySelectorAll("#vista5 input")];
@@ -270,27 +245,14 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   render();
 
+  // seguimos usando el backend igual para el resto,
+  // pero ya sin total / favoritos / explosivos en pantalla
   if (ultimos.length >= 16){
-
-    const r = await fetch(API + "/calcular", {
+    await fetch(API + "/calcular", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ultimos })
     });
-
-    const d = await r.json();
-
-    if (d.completed) totalAcumulado = 0;
-
-    totalAcumulado += d.favoritos.length + d.explosivos.length;
-
-    document.getElementById("total").value = totalAcumulado;
-
-    document.getElementById("fav").innerText =
-      d.favoritos.length ? d.favoritos.join(", ") : "—";
-
-    document.getElementById("exp").innerText =
-      d.explosivos.length ? d.explosivos.join(", ") : "—";
   }
 
   e.target.value = "";
@@ -314,12 +276,6 @@ function render(){
 
 function reiniciar(){
   ultimos = [];
-  totalAcumulado = 0;
-
-  document.getElementById("total").value = "";
-  fav.innerText = "—";
-  exp.innerText = "—";
-
   location.reload();
 }
 
@@ -327,9 +283,9 @@ function reiniciar(){
    LOTES — GENERACIÓN + CÁLCULO DE CARAMELOS
    ====================================================== */
 
-// crear 16 casilleros (2 columnas)
 const zona = document.getElementById("zonaLotes");
 
+// crear 16 casilleros
 for(let i=0;i<16;i++){
   const row = document.createElement("div");
   row.className = "lote-box";
@@ -342,34 +298,32 @@ for(let i=0;i<16;i++){
   zona.appendChild(row);
 }
 
-// estado de lotes
 const LOTES = Array.from({length:16}).map(()=>({
   activa:false,
   gasto:0,
   busca:[]
 }));
 
-// función para mostrar búsqueda + caramelos
+// regla: base 1, +1 cada 20
 function setBusqueda(loteIndex, numeros, gastoNuevo){
-  const numerosBox = document.getElementById("lote_nums_"+loteIndex);
-  const carBox = document.getElementById("lote_car_"+loteIndex);
+  const n = document.getElementById("lote_nums_"+loteIndex);
+  const c = document.getElementById("lote_car_"+loteIndex);
 
   LOTES[loteIndex].busca = numeros;
   LOTES[loteIndex].gasto += gastoNuevo;
 
-  numerosBox.value = numeros.join(" ");
+  n.value = numeros.join(" ");
 
-  // regla: base 1 — +1 cada 20
   const caramelos = Math.floor(LOTES[loteIndex].gasto / 20) + 1;
-  carBox.value = caramelos;
+  c.value = caramelos;
 }
 
-// DEMO — solo para probar visual
+/* DEMO visual — podés borrar cuando quieras */
 setBusqueda(0,[13,36,27],22);
 setBusqueda(1,[6,27,13],5);
 
 </script>
 
 </body>
-      </html>
-        
+        </html>
+  
