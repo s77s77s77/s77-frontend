@@ -127,21 +127,26 @@ button{
 
   <h2>ÚLTIMOS NÚMEROS</h2>
 
-  <!-- 👇 Vista con 16 casilleros (solo hasta cargar el 16) -->
-  <div class="inputs" id="vista16">
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-  </div>
+  <!-- 🔹 Este contenedor es “la zona de números” -->
+  <div id="zonaNumeros">
 
-  <!-- 👇 Vista con 5 casilleros (desde el número 16 en adelante) -->
-  <div class="inputs5 hidden" id="vista5">
-    <input disabled>
-    <input disabled>
-    <input disabled>
-    <input disabled>
-    <input disabled>
+    <!-- 👉 Vista inicial: 16 casilleros -->
+    <div class="inputs" id="vista16">
+      <input disabled><input disabled><input disabled><input disabled>
+      <input disabled><input disabled><input disabled><input disabled>
+      <input disabled><input disabled><input disabled><input disabled>
+      <input disabled><input disabled><input disabled><input disabled>
+    </div>
+
+    <!-- 👉 Vista final: solo 5 casilleros (arriba, ocupando el lugar) -->
+    <div class="inputs5 hidden" id="vista5">
+      <input disabled>
+      <input disabled>
+      <input disabled>
+      <input disabled>
+      <input disabled>
+    </div>
+
   </div>
 
   <h3>NUEVO NÚMERO</h3>
@@ -252,14 +257,16 @@ document.getElementById("nuevoNumero").onchange = async e => {
 /* ⭐ LÓGICA DE VISUALIZACIÓN ⭐ */
 function render(){
 
-  // siempre llenamos la vista de 16 (para verlos al principio)
+  // mientras cargo — siempre muestro los 16
   cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
 
-  // cuando llegamos a 16 → cambiamos de vista
+  // cuando se completan los 16…
   if (ultimos.length >= 16){
 
-    // ocultar 16 — mostrar 5
+    // oculto el bloque completo de 16 (libera espacio)
     document.getElementById("vista16").classList.add("hidden");
+
+    // muestro el bloque de 5 en su lugar
     document.getElementById("vista5").classList.remove("hidden");
 
     const ult5 = ultimos.slice(0,5);
@@ -276,7 +283,7 @@ function reiniciar(){
   fav.innerText = "—";
   exp.innerText = "—";
 
-  // volvemos a mostrar los 16
+  // vuelvo a estado inicial
   document.getElementById("vista5").classList.add("hidden");
   document.getElementById("vista16").classList.remove("hidden");
 
@@ -285,5 +292,5 @@ function reiniciar(){
 </script>
 
 </body>
-  </html>
+             </html>
   
