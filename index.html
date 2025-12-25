@@ -72,16 +72,21 @@ button{
   background:#7fd3ff;
 }
 
-/* ======================
-   LOTES — VISUAL
-   ====================== */
+/* ============================
+   LOTES — AJUSTE DE POSICIÓN
+   ============================ */
 
-/* ahora alineado a la izquierda del panel, no centrado */
+/*
+  Hacemos que el bloque completo tenga un ancho fijo,
+  y lo centramos — así el espacio del medio queda
+  alineado EXACTO bajo el botón.
+*/
+
 .lotes-wrapper{
   margin-top:25px;
-  width:100%;
-  display:flex;
-  justify-content:flex-start;
+  width: 360px;         /* <- AJUSTA EL CENTRO */
+  margin-left:auto;
+  margin-right:auto;
 }
 
 .lotes-grid{
@@ -184,7 +189,7 @@ button{
   <!-- LOTES -->
   <div class="lotes-wrapper">
     <div class="lotes-grid" id="zonaLotes">
-      <!-- se genera por JS -->
+      <!-- generado por JS -->
     </div>
   </div>
 
@@ -278,7 +283,7 @@ function reiniciar(){
 }
 
 /* ======================================================
-   LOTES — SOLO ESTRUCTURA (sin demo)
+   LOTES — SOLO ESTRUCTURA
    ====================================================== */
 
 const zona = document.getElementById("zonaLotes");
@@ -294,28 +299,8 @@ for(let i=0;i<16;i++){
 
   zona.appendChild(row);
 }
-
-const LOTES = Array.from({length:16}).map(()=>({
-  activa:false,
-  gasto:0,
-  busca:[]
-}));
-
-// queda lista para usar más adelante:
-function setBusqueda(loteIndex, numeros, gastoNuevo){
-  const n = document.getElementById("lote_nums_"+loteIndex);
-  const c = document.getElementById("lote_car_"+loteIndex);
-
-  LOTES[loteIndex].busca = numeros;
-  LOTES[loteIndex].gasto += gastoNuevo;
-
-  n.value = numeros.join(" ");
-
-  const caramelos = Math.floor(LOTES[loteIndex].gasto / 20) + 1;
-  c.value = caramelos;
-}
 </script>
 
 </body>
-                                        </html>
+        </html>
   
