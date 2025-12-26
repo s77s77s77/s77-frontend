@@ -23,8 +23,29 @@ button{background:maroon;color:white;font-weight:bold}
 
 .lotes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .lote-box{display:grid;grid-template-columns:1fr 70px;gap:10px}
-.lote-numeros{height:55px;border-radius:10px;background:#111;border:3px solid #444;color:#fff;font-size:22px;font-weight:bold;text-align:center}
-.lote-caramelos{height:55px;border-radius:10px;background:#222;border:3px solid #888;color:yellow;font-size:26px;font-weight:bold;text-align:center}
+
+/* 👇 FORZADO: texto bien visible */
+.lote-numeros{
+  height:55px;
+  border-radius:10px;
+  background:#000000;
+  border:3px solid #444;
+  color:#ffffff !important;
+  font-size:22px;
+  font-weight:bold;
+  text-align:center;
+}
+
+.lote-caramelos{
+  height:55px;
+  border-radius:10px;
+  background:#222;
+  border:3px solid #888;
+  color:yellow;
+  font-size:26px;
+  font-weight:bold;
+  text-align:center;
+}
 </style>
 </head>
 
@@ -114,7 +135,7 @@ const estado={
   ultimoCierrePos:null,
   bloqueado:false,
   slot:null,
-  pendienteBorrar:false // 👈 nuevo
+  pendienteBorrar:false
 };
 
 const zona=document.getElementById("zonaLotes");
@@ -160,22 +181,18 @@ function render(){
 
 function motor(){
 
-  // si había cierre inmediato antes → borrar ahora
   if(estado.pendienteBorrar){
     estado.slot.value="";
     estado.pendienteBorrar=false;
   }
 
-  // búsqueda activa
   if(estado.activo){
 
-    // cerrar si cualquiera de los BUSCA está
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
         estado.activo=false;
         estado.ultimoCierrePos=i;
         estado.bloqueado=true;
-        // dejamos visibles los números hasta el próximo ingreso
         estado.pendienteBorrar=true;
         return;
       }
@@ -183,7 +200,6 @@ function motor(){
     return;
   }
 
-  // bloqueo después de éxito
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
 
     for(let i=0;i<ultimos.length;i++){
@@ -200,7 +216,6 @@ function motor(){
 
   if(ultimos.length<16) return;
 
-  // activar
   for(const p of LOTES.A){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -223,16 +238,14 @@ function motor(){
       estado.pareja=p.pareja;
       estado.busca=p.busca;
 
-      // 👈 SIEMPRE mostrar
       estado.slot.value=p.busca.join(" ");
 
-      // cierre inmediato si ya estaba uno
       for(let i=0;i<ultimos.length;i++){
         if(estado.busca.includes(ultimos[i])){
           estado.activo=false;
           estado.ultimoCierrePos=i;
           estado.bloqueado=true;
-          estado.pendienteBorrar=true; // 👈 borrar en el próximo número
+          estado.pendienteBorrar=true;
         }
       }
       break;
@@ -244,5 +257,5 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-      </html>
+  </html>
   
