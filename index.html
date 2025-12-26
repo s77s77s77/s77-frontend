@@ -24,27 +24,21 @@ button{background:maroon;color:white;font-weight:bold}
 .lotes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .lote-box{display:grid;grid-template-columns:1fr 70px;gap:10px}
 
-/* 👇 FORZADO: texto bien visible */
+/* 👉 SOLO ESTO CAMBIÓ */
 .lote-numeros{
   height:55px;
   border-radius:10px;
-  background:#000000;
+  background:#111;
   border:3px solid #444;
-  color:#ffffff !important;
+  color:#fff;            /* texto blanco */
   font-size:22px;
   font-weight:bold;
   text-align:center;
 }
 
 .lote-caramelos{
-  height:55px;
-  border-radius:10px;
-  background:#222;
-  border:3px solid #888;
-  color:yellow;
-  font-size:26px;
-  font-weight:bold;
-  text-align:center;
+  height:55px;border-radius:10px;background:#222;border:3px solid #888;color:yellow;
+  font-size:26px;font-weight:bold;text-align:center;
 }
 </style>
 </head>
@@ -107,13 +101,17 @@ const cas5=[...document.querySelectorAll("#vista5 input")];
 function login(){
   const clave=document.getElementById("clave").value.trim();
   const error=document.getElementById("error");
-  if(clave!=="777"){error.textContent="Clave incorrecta";return;}
+
+  if(clave!=="777"){
+    error.textContent="Clave incorrecta";
+    return;
+  }
+
   error.textContent="";
-  login.classList.add("hidden");
-  s77.classList.remove("hidden");
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("s77").classList.remove("hidden");
 }
 
-/* LOTE A */
 const LOTES={
   A:[
     { pareja:[6,34], busca:[27,5,10,24,13,36] },
@@ -149,7 +147,10 @@ zona.appendChild(box);
 estado.slot=document.getElementById("lote_nums_A");
 
 function posicionesDe(num){
-  const arr=[];for(let i=0;i<ultimos.length;i++){if(ultimos[i]===num)arr.push(i);}
+  const arr=[];
+  for(let i=0;i<ultimos.length;i++){
+    if(ultimos[i]===num) arr.push(i);
+  }
   return arr;
 }
 
@@ -173,7 +174,6 @@ function render(){
     const v5=document.getElementById("vista5");
     if(v16) v16.remove();
     v5.classList.remove("hidden");
-
     const ult5=ultimos.slice(0,5);
     cas5.forEach((c,i)=>c.value=ult5[i]??"");
   }
@@ -187,7 +187,6 @@ function motor(){
   }
 
   if(estado.activo){
-
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
         estado.activo=false;
@@ -201,7 +200,6 @@ function motor(){
   }
 
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
-
     for(let i=0;i<ultimos.length;i++){
       if(numerosDelLoteA.includes(ultimos[i])){
         const dist=Math.abs(i-estado.ultimoCierrePos);
@@ -217,27 +215,23 @@ function motor(){
   if(ultimos.length<16) return;
 
   for(const p of LOTES.A){
-
     const posA=posicionesDe(p.pareja[0]);
     const posB=posicionesDe(p.pareja[1]);
     if(!posA.length||!posB.length) continue;
 
     let puede=false;
-
     for(const a of posA){
       for(const b of posB){
         const dist=Math.abs(a-b);
         const unoEn8=(a<=7||b<=7);
         if(dist<=8 && unoEn8){puede=true;break;}
       }
-      if(puede)break;
+      if(puede) break;
     }
 
     if(puede){
       estado.activo=true;
-      estado.pareja=p.pareja;
       estado.busca=p.busca;
-
       estado.slot.value=p.busca.join(" ");
 
       for(let i=0;i<ultimos.length;i++){
