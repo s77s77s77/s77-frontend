@@ -122,8 +122,7 @@ function login(){
 }
 
 /*
- LOTE A — del archivo PRUEBA FINAL
- (solo para pruebas)
+ LOTE A — según PRUEBA FINAL
 */
 const LOTES = {
   A:[
@@ -137,19 +136,19 @@ const LOTES = {
   ]
 };
 
-/* estado del lote */
-const estadoLotes = {
-  A:{
-    activo:false,
-    pareja:null,
-    busca:[],
-    ultimoCierrePos:null,   // posición donde se cerró
-    bloqueado:false,
-    slot:null
-  }
+const numerosDelLoteA = [6,34,27,5,10,24,13,36];
+
+/* estado Lote A */
+const estado = {
+  activo:false,
+  pareja:null,
+  busca:[],
+  ultimoCierrePos:null,
+  bloqueado:false,
+  slot:null
 };
 
-/* crear casillero visual */
+/* crear casillero */
 const zona=document.getElementById("zonaLotes");
 const box=document.createElement("div");
 box.className="lote-box";
@@ -158,15 +157,15 @@ box.innerHTML=`
   <input class="lote-caramelos" disabled>
 `;
 zona.appendChild(box);
-estadoLotes.A.slot=document.getElementById("lote_nums_A");
+estado.slot=document.getElementById("lote_nums_A");
 
 /* utilidades */
 function posicionesDe(num){
-  const pos=[];
+  const arr=[];
   for(let i=0;i<ultimos.length;i++){
-    if(ultimos[i]===num) pos.push(i);
+    if(ultimos[i]===num) arr.push(i);
   }
-  return pos;
+  return arr;
 }
 
 document.getElementById("nuevoNumero").onchange=e=>{
@@ -177,7 +176,7 @@ document.getElementById("nuevoNumero").onchange=e=>{
   if(ultimos.length>16) ultimos.pop();
 
   render();
-  controlarLoteA();
+  motor();
   e.target.value="";
 };
 
@@ -195,22 +194,20 @@ function render(){
   }
 }
 
-/* ======================
-   MOTOR SOLO LOTE A
-   ====================== */
-function controlarLoteA(){
+/* ================
+   MOTOR REGLAS
+   ================ */
+function motor(){
 
-  const st = estadoLotes.A;
+  // --- si hay búsqueda activa ---
+  if(estado.activo){
 
-  // si hay búsqueda activa
-  if(st.activo){
-
-    // ¿apareció alguno de los "busca"?
+    // ¿aparece algún número "busca"?
     let encontrada = false;
     let posCierre = null;
 
     for(let i=0;i<ultimos.length;i++){
-      if(st.busca.includes(ultimos[i])){
+      if(estado.busca.includes(ultimos[i])){
         encontrada = true;
         posCierre = i;
         break;
@@ -218,29 +215,31 @@ function controlarLoteA(){
     }
 
     if(encontrada){
-      st.activo=false;
-      st.slot.value="";
-      st.ultimoCierrePos = posCierre;
-      st.bloqueado = true;
+      // cerrar búsqueda (también cuenta como cierre del lote)
+      estado.activo=false;
+      estado.slot.value="";
+      estado.ultimoCierrePos = posCierre;
+      estado.bloqueado = true;
       return;
     }
 
+    // repetir números de la pareja: no pasa nada
     return;
   }
 
-  // si está bloqueado, verificamos si ya se puede volver a buscar
-  if(st.bloqueado && st.ultimoCierrePos != null){
+  // --- si está bloqueado (post éxito) ---
+  if(estado.bloqueado && estado.ultimoCierrePos !== null){
 
-    // buscamos cualquier número del lote en las posiciones actuales
-    const numerosDelLote = [6,34,27,5,10,24,13,36];
-
+    // buscamos el próximo número del lote
     for(let i=0;i<ultimos.length;i++){
-      if(numerosDelLote.includes(ultimos[i])){
+      if(numerosDelLoteA.includes(ultimos[i])){
 
-        const dist = Math.abs(i - st.ultimoCierrePos);
+        const dist = Math.abs(i - estado.ultimoCierrePos);
 
+        // si está a 7 o más → se libera
         if(dist >= 7){
-          st.bloqueado = false;   // se libera
+          estado.bloqueado = false;
+          // seguimos y permitimos buscar de nuevo
         } else {
           return; // sigue bloqueado
         }
@@ -248,24 +247,23 @@ function controlarLoteA(){
     }
   }
 
-  // si no hay búsqueda activa → intentar activar
+  // --- intentar activar ---
   for(const p of LOTES.A){
 
     const posA = posicionesDe(p.pareja[0]);
     const posB = posicionesDe(p.pareja[1]);
-
     if(!posA.length || !posB.length) continue;
 
-    let puede = false;
+    let puede=false;
 
     for(const a of posA){
       for(const b of posB){
 
-        const dist = Math.abs(a-b);
-        const unoEn8 = (a<=7)||(b<=7);
+        const dist=Math.abs(a-b);
+        const unoEn8=(a<=7)||(b<=7);
 
-        if(dist <= 8 && unoEn8){
-          puede = true;
+        if(dist<=8 && unoEn8){
+          puede=true;
           break;
         }
       }
@@ -273,10 +271,10 @@ function controlarLoteA(){
     }
 
     if(puede){
-      st.activo = true;
-      st.pareja = p.pareja;
-      st.busca = p.busca;
-      st.slot.value = p.busca.join(" ");
+      estado.activo=true;
+      estado.pareja=p.pareja;
+      estado.busca=p.busca;
+      estado.slot.value=p.busca.join(" ");
       break;
     }
   }
@@ -286,5 +284,5 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-     </html>
- 
+  </html>
+  
