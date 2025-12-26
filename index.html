@@ -25,8 +25,6 @@ button{background:maroon;color:white;font-weight:bold}
 .lote-box{display:grid;grid-template-columns:1fr 70px;gap:10px}
 .lote-numeros{height:55px;border-radius:10px;background:#111;border:3px solid #444;color:#fff;font-size:22px;font-weight:bold;text-align:center}
 .lote-caramelos{height:55px;border-radius:10px;background:#222;border:3px solid #888;color:yellow;font-size:26px;font-weight:bold;text-align:center}
-
-.debug{font-size:14px;color:#7fd3ff;margin-bottom:6px;min-height:18px}
 </style>
 </head>
 
@@ -39,6 +37,7 @@ button{background:maroon;color:white;font-weight:bold}
   <input id="clave">
   <br>
   <button onclick="login()">INGRESAR</button>
+  <p id="error" style="color:red;"></p>
 </div>
 
 <div class="panel hidden" id="s77">
@@ -85,6 +84,15 @@ const cas16=[...document.querySelectorAll("#vista16 input")];
 const cas5=[...document.querySelectorAll("#vista5 input")];
 
 function login(){
+  const clave = document.getElementById("clave").value.trim();
+  const error = document.getElementById("error");
+
+  if(clave !== "777"){
+    error.textContent = "Clave incorrecta";
+    return;
+  }
+
+  error.textContent = "";
   document.getElementById("login").classList.add("hidden");
   document.getElementById("s77").classList.remove("hidden");
 }
@@ -112,26 +120,25 @@ const estado={
   busca:[],
   ultimoCierrePos:null,
   bloqueado:false,
-  slot:null,
-  dbg:null
+  slot:null
 };
 
 const zona=document.getElementById("zonaLotes");
 const box=document.createElement("div");
 box.className="lote-box";
 box.innerHTML=`
-  <div>
-    <div class="debug" id="dbgA"></div>
-    <input class="lote-numeros" id="lote_nums_A">
-  </div>
+  <input class="lote-numeros" id="lote_nums_A">
   <input class="lote-caramelos" disabled>
 `;
 zona.appendChild(box);
 estado.slot=document.getElementById("lote_nums_A");
-estado.dbg=document.getElementById("dbgA");
 
 function posicionesDe(num){
-  const arr=[];for(let i=0;i<ultimos.length;i++){if(ultimos[i]===num)arr.push(i);}return arr;
+  const arr=[];
+  for(let i=0;i<ultimos.length;i++){
+    if(ultimos[i]===num) arr.push(i);
+  }
+  return arr;
 }
 
 document.getElementById("nuevoNumero").onchange=e=>{
@@ -160,18 +167,13 @@ function render(){
   }
 }
 
-function debug(msg){estado.dbg.textContent=msg;}
-
-/* MOTOR */
 function motor(){
 
-  // Si hay búsqueda activa
+  // búsqueda activa
   if(estado.activo){
 
-    // Cierra si ANY de los busca está en los 16
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
-        debug("Cierre — número buscado: "+ultimos[i]);
         estado.activo=false;
         estado.slot.value="";
         estado.ultimoCierrePos=i;
@@ -179,23 +181,17 @@ function motor(){
         return;
       }
     }
-
-    debug("Buscando: "+estado.busca.join(" "));
     return;
   }
 
-  // Si está bloqueado
-  if(estado.bloqueado && estado.ultimoCierrePos!==null){
+  // bloqueo por éxito previo
+  if(estado.bloqueado && estado.ultimoCierrePos !== null){
 
     for(let i=0;i<ultimos.length;i++){
       if(numerosDelLoteA.includes(ultimos[i])){
         const dist=Math.abs(i-estado.ultimoCierrePos);
-        if(dist<7){
-          debug("Bloqueado — distancia "+dist);
-          return;
-        }
+        if(dist<7) return;
         if(dist>=7){
-          debug("Desbloqueado — distancia "+dist);
           estado.bloqueado=false;
           break;
         }
@@ -203,13 +199,9 @@ function motor(){
     }
   }
 
-  // Solo activar si hay 16
-  if(ultimos.length<16){
-    debug("Esperando 16 números");
-    return;
-  }
+  if(ultimos.length<16) return;
 
-  // Intentar activar
+  // intentar activar
   for(const p of LOTES.A){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -233,19 +225,15 @@ function motor(){
       estado.busca=p.busca;
       estado.slot.value=p.busca.join(" ");
 
-      // chequeo inmediato — si ya estaba un buscado, cierra
+      // cierre inmediato si ya estaba uno de los buscados
       for(let i=0;i<ultimos.length;i++){
         if(estado.busca.includes(ultimos[i])){
-          debug("Cierre inmediato — ya estaba "+ultimos[i]);
           estado.activo=false;
           estado.slot.value="";
           estado.ultimoCierrePos=i;
           estado.bloqueado=true;
-          return;
         }
       }
-
-      debug("Activado — pareja "+p.pareja.join(" / "));
       break;
     }
   }
@@ -255,5 +243,5 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-  </html>
+                                                        </html>
   
