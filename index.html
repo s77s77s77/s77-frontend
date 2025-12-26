@@ -78,29 +78,22 @@ button{background:maroon;color:white;font-weight:bold}
 </div>
 
 <script>
-let ultimos = [];
+let ultimos=[];
 
 const cas16=[...document.querySelectorAll("#vista16 input")];
 const cas5=[...document.querySelectorAll("#vista5 input")];
 
 function login(){
-  const clave = document.getElementById("clave").value.trim();
-  const error = document.getElementById("error");
-
-  if(clave !== "777"){
-    error.textContent = "Clave incorrecta";
-    return;
-  }
-
-  error.textContent = "";
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
+  const clave=document.getElementById("clave").value.trim();
+  const error=document.getElementById("error");
+  if(clave!=="777"){error.textContent="Clave incorrecta";return;}
+  error.textContent="";
+  login.classList.add("hidden");
+  s77.classList.remove("hidden");
 }
 
-/*
- LOTE A
-*/
-const LOTES = {
+/* LOTE A */
+const LOTES={
   A:[
     { pareja:[6,34], busca:[27,5,10,24,13,36] },
     { pareja:[34,27], busca:[5,10,24,13,36,6] },
@@ -120,7 +113,8 @@ const estado={
   busca:[],
   ultimoCierrePos:null,
   bloqueado:false,
-  slot:null
+  slot:null,
+  pendienteBorrar:false // 👈 nuevo
 };
 
 const zona=document.getElementById("zonaLotes");
@@ -134,10 +128,7 @@ zona.appendChild(box);
 estado.slot=document.getElementById("lote_nums_A");
 
 function posicionesDe(num){
-  const arr=[];
-  for(let i=0;i<ultimos.length;i++){
-    if(ultimos[i]===num) arr.push(i);
-  }
+  const arr=[];for(let i=0;i<ultimos.length;i++){if(ultimos[i]===num)arr.push(i);}
   return arr;
 }
 
@@ -169,23 +160,31 @@ function render(){
 
 function motor(){
 
+  // si había cierre inmediato antes → borrar ahora
+  if(estado.pendienteBorrar){
+    estado.slot.value="";
+    estado.pendienteBorrar=false;
+  }
+
   // búsqueda activa
   if(estado.activo){
 
+    // cerrar si cualquiera de los BUSCA está
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
         estado.activo=false;
-        estado.slot.value="";
         estado.ultimoCierrePos=i;
         estado.bloqueado=true;
+        // dejamos visibles los números hasta el próximo ingreso
+        estado.pendienteBorrar=true;
         return;
       }
     }
     return;
   }
 
-  // bloqueo por éxito previo
-  if(estado.bloqueado && estado.ultimoCierrePos !== null){
+  // bloqueo después de éxito
+  if(estado.bloqueado && estado.ultimoCierrePos!==null){
 
     for(let i=0;i<ultimos.length;i++){
       if(numerosDelLoteA.includes(ultimos[i])){
@@ -201,7 +200,7 @@ function motor(){
 
   if(ultimos.length<16) return;
 
-  // intentar activar
+  // activar
   for(const p of LOTES.A){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -223,15 +222,17 @@ function motor(){
       estado.activo=true;
       estado.pareja=p.pareja;
       estado.busca=p.busca;
+
+      // 👈 SIEMPRE mostrar
       estado.slot.value=p.busca.join(" ");
 
-      // cierre inmediato si ya estaba uno de los buscados
+      // cierre inmediato si ya estaba uno
       for(let i=0;i<ultimos.length;i++){
         if(estado.busca.includes(ultimos[i])){
           estado.activo=false;
-          estado.slot.value="";
           estado.ultimoCierrePos=i;
           estado.bloqueado=true;
+          estado.pendienteBorrar=true; // 👈 borrar en el próximo número
         }
       }
       break;
@@ -243,5 +244,5 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-                                                        </html>
+      </html>
   
