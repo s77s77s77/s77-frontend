@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -17,7 +17,6 @@ body{
 input,button{padding:10px;border-radius:8px;border:none;margin:5px}
 button{background:maroon;color:white;font-weight:bold}
 
-/* 16 */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
@@ -29,12 +28,8 @@ button{background:maroon;color:white;font-weight:bold}
   border:4px solid red;background:white;color:black;
 }
 
-/* últimos 5 */
 .inputs5{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  margin:0;
+  display:flex;flex-direction:column;gap:8px;margin:0;
 }
 .inputs5 input{
   width:55px;height:55px;font-size:26px;font-weight:bold;text-align:center;
@@ -46,7 +41,6 @@ button{background:maroon;color:white;font-weight:bold}
   border:4px solid red;background:#7fd3ff;
 }
 
-/* tablero */
 .tablero{
   margin-top:20px;
   display:flex;
@@ -55,7 +49,6 @@ button{background:maroon;color:white;font-weight:bold}
   gap:25px;
 }
 
-/* lotes */
 .lotes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .lote-box{display:grid;grid-template-columns:1fr 70px;gap:10px}
 .lote-numeros{
@@ -128,36 +121,44 @@ function login(){
   document.getElementById("s77").classList.remove("hidden");
 }
 
-/* ======================
-   DATOS (ejemplo Lote A)
-   ====================== */
-
+/*
+ LOTE A — del archivo PRUEBA FINAL
+ (solo para pruebas)
+*/
 const LOTES = {
   A:[
-    {pareja:[6,10],busca:[13,36,27]},
-    {pareja:[6,5],busca:[13,36,27]},
-    {pareja:[6,26],busca:[10,33,5]}
+    { pareja:[6,34], busca:[27,5,10,24,13,36] },
+    { pareja:[34,27], busca:[5,10,24,13,36,6] },
+    { pareja:[27,5],  busca:[10,24,13,36,6,34] },
+    { pareja:[5,10],  busca:[24,13,36,6,34,27] },
+    { pareja:[10,24], busca:[13,36,6,34,27,5] },
+    { pareja:[24,13], busca:[36,6,34,27,5,10] },
+    { pareja:[13,36], busca:[6,34,27,5,10,24] }
   ]
 };
 
-/* estado */
-const estadoLotes={};
-Object.keys(LOTES).forEach(l=>{
-  estadoLotes[l]={activo:false,pareja:null,busca:[],contador:0,slot:null};
-});
+/* estado del lote */
+const estadoLotes = {
+  A:{
+    activo:false,
+    pareja:null,
+    busca:[],
+    ultimoCierrePos:null,   // posición donde se cerró
+    bloqueado:false,
+    slot:null
+  }
+};
 
-/* crear casilleros de lotes */
+/* crear casillero visual */
 const zona=document.getElementById("zonaLotes");
-Object.keys(LOTES).forEach(lote=>{
-  const box=document.createElement("div");
-  box.className="lote-box";
-  box.innerHTML=`
-    <input class="lote-numeros" id="lote_nums_${lote}">
-    <input class="lote-caramelos" disabled>
-  `;
-  zona.appendChild(box);
-  estadoLotes[lote].slot=document.getElementById(`lote_nums_${lote}`);
-});
+const box=document.createElement("div");
+box.className="lote-box";
+box.innerHTML=`
+  <input class="lote-numeros" id="lote_nums_A">
+  <input class="lote-caramelos" disabled>
+`;
+zona.appendChild(box);
+estadoLotes.A.slot=document.getElementById("lote_nums_A");
 
 /* utilidades */
 function posicionesDe(num){
@@ -176,7 +177,7 @@ document.getElementById("nuevoNumero").onchange=e=>{
   if(ultimos.length>16) ultimos.pop();
 
   render();
-  controlarLotes();
+  controlarLoteA();
   e.target.value="";
 };
 
@@ -188,96 +189,102 @@ function render(){
     const v5=document.getElementById("vista5");
     if(v16) v16.remove();
     v5.classList.remove("hidden");
+
     const ult5=ultimos.slice(0,5);
     cas5.forEach((c,i)=>c.value=ult5[i]??"");
   }
 }
 
 /* ======================
-   MOTOR CORREGIDO
+   MOTOR SOLO LOTE A
    ====================== */
-function controlarLotes(){
+function controlarLoteA(){
 
-  Object.keys(LOTES).forEach(lote=>{
-    const st=estadoLotes[lote];
+  const st = estadoLotes.A;
 
-    // --- si está activo ---
-    if(st.activo){
+  // si hay búsqueda activa
+  if(st.activo){
 
-      st.contador++;
+    // ¿apareció alguno de los "busca"?
+    let encontrada = false;
+    let posCierre = null;
 
-      // 1) si cualquiera de los buscados está en los 16 -> cortar
-      const hayBuscado = st.busca.some(n=>ultimos.includes(n));
-      if(hayBuscado){
-        st.activo=false;
-        st.slot.value="";
-        return;
-      }
-
-      // 2) cancelar si ninguno de la pareja queda en primeros 8
-      const p1pos=posicionesDe(st.pareja[0]);
-      const p2pos=posicionesDe(st.pareja[1]);
-
-      const algunoEnPrimeros8 =
-        p1pos.some(p=>p<=7) || p2pos.some(p=>p<=7);
-
-      if(!algunoEnPrimeros8){
-        st.activo=false;
-        st.slot.value="";
-        return;
-      }
-
-      // 3) cancelar si llegó a 8 tiradas
-      if(st.contador>=8){
-        st.activo=false;
-        st.slot.value="";
-      }
-
-      return;
-    }
-
-    // --- si NO está activo: intentar activar ---
-    for(const p of LOTES[lote]){
-
-      const posA=posicionesDe(p.pareja[0]);
-      const posB=posicionesDe(p.pareja[1]);
-
-      if(!posA.length || !posB.length) continue;
-
-      let puede=false;
-
-      // probar TODAS las combinaciones posibles
-      for(const a of posA){
-        for(const b of posB){
-
-          const dist=Math.abs(a-b);
-          const unoEnPrimerosOcho = (a<=7)||(b<=7);
-
-          if(dist<=8 && unoEnPrimerosOcho){
-            puede=true;
-            break;
-          }
-        }
-        if(puede) break;
-      }
-
-      if(puede){
-        st.activo=true;
-        st.pareja=p.pareja;
-        st.busca=p.busca;
-        st.contador=0;
-        st.slot.value=p.busca.join(" ");
+    for(let i=0;i<ultimos.length;i++){
+      if(st.busca.includes(ultimos[i])){
+        encontrada = true;
+        posCierre = i;
         break;
       }
     }
 
-  });
+    if(encontrada){
+      st.activo=false;
+      st.slot.value="";
+      st.ultimoCierrePos = posCierre;
+      st.bloqueado = true;
+      return;
+    }
 
+    return;
+  }
+
+  // si está bloqueado, verificamos si ya se puede volver a buscar
+  if(st.bloqueado && st.ultimoCierrePos != null){
+
+    // buscamos cualquier número del lote en las posiciones actuales
+    const numerosDelLote = [6,34,27,5,10,24,13,36];
+
+    for(let i=0;i<ultimos.length;i++){
+      if(numerosDelLote.includes(ultimos[i])){
+
+        const dist = Math.abs(i - st.ultimoCierrePos);
+
+        if(dist >= 7){
+          st.bloqueado = false;   // se libera
+        } else {
+          return; // sigue bloqueado
+        }
+      }
+    }
+  }
+
+  // si no hay búsqueda activa → intentar activar
+  for(const p of LOTES.A){
+
+    const posA = posicionesDe(p.pareja[0]);
+    const posB = posicionesDe(p.pareja[1]);
+
+    if(!posA.length || !posB.length) continue;
+
+    let puede = false;
+
+    for(const a of posA){
+      for(const b of posB){
+
+        const dist = Math.abs(a-b);
+        const unoEn8 = (a<=7)||(b<=7);
+
+        if(dist <= 8 && unoEn8){
+          puede = true;
+          break;
+        }
+      }
+      if(puede) break;
+    }
+
+    if(puede){
+      st.activo = true;
+      st.pareja = p.pareja;
+      st.busca = p.busca;
+      st.slot.value = p.busca.join(" ");
+      break;
+    }
+  }
 }
 
 function reiniciar(){location.reload();}
 </script>
 
 </body>
-                                                        </html>
-        
+     </html>
+ 
