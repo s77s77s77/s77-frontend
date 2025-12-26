@@ -36,13 +36,13 @@ button{
   font-weight:bold;
 }
 
+/* 16 */
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
   gap:12px;
   justify-content:center;
 }
-
 .inputs input{
   width:70px;
   height:70px;
@@ -60,7 +60,6 @@ button{
   flex-direction:column;
   gap:8px;
   margin:0;
-  padding:0;
 }
 .inputs5 input{
   width:55px;
@@ -97,13 +96,11 @@ button{
   grid-template-columns: 1fr 1fr;
   gap:14px;
 }
-
 .lote-box{
   display:grid;
   grid-template-columns: 1fr 70px;
   gap:10px;
 }
-
 .lote-numeros{
   height:55px;
   border-radius:10px;
@@ -113,9 +110,7 @@ button{
   font-size:22px;
   font-weight:bold;
   text-align:center;
-  letter-spacing:4px;
 }
-
 .lote-caramelos{
   height:55px;
   border-radius:10px;
@@ -138,7 +133,6 @@ button{
   <input id="clave">
   <br>
   <button onclick="login()">INGRESAR</button>
-  <p id="error" style="color:red;"></p>
 </div>
 
 <div class="panel hidden" id="s77">
@@ -179,8 +173,6 @@ button{
 </div>
 
 <script>
-const API = "https://s77-backend.onrender.com";
-
 let ultimos = [];
 
 const cas16 = [...document.querySelectorAll("#vista16 input")];
@@ -191,142 +183,129 @@ function login(){
   document.getElementById("s77").classList.remove("hidden");
 }
 
-/* ==============================
-   LOTES (A — F DEL ARCHIVO)
-   ============================== */
-
+/* =========================
+   LOTES (ejemplo — seguimos ampliando)
+   ========================= */
 const LOTES = {
   A: [
     { pareja:[6,10], busca:[13,36,27] },
-    { pareja:[6,5], busca:[13,36,27] },
+    { pareja:[6,5],  busca:[13,36,27] },
     { pareja:[6,26], busca:[10,33,5] }
-  ],
-  B: [],
-  C: [],
-  D: [],
-  E: [],
-  F: []
+  ]
 };
 
-/* estado dinámico */
 const estadoLotes = {};
-Object.keys(LOTES).forEach((k,i)=>{
-  estadoLotes[k] = {
+Object.keys(LOTES).forEach(lote=>{
+  estadoLotes[lote] = {
     activo:false,
     pareja:null,
     busca:[],
     contador:0,
-    slotNumeros: null
+    slot:null
   };
 });
 
 const zona = document.getElementById("zonaLotes");
-let loteIndex = 0;
-
-Object.keys(LOTES).forEach(lote =>{
-  const row = document.createElement("div");
-  row.className = "lote-box";
-  row.innerHTML = `
+Object.keys(LOTES).forEach(lote=>{
+  const box = document.createElement("div");
+  box.className = "lote-box";
+  box.innerHTML = `
     <input class="lote-numeros" id="lote_nums_${lote}">
-    <input class="lote-caramelos" id="lote_car_${lote}">
+    <input class="lote-caramelos" disabled>
   `;
-  zona.appendChild(row);
-  estadoLotes[lote].slotNumeros = document.getElementById(`lote_nums_${lote}`);
+  zona.appendChild(box);
+  estadoLotes[lote].slot = document.getElementById(`lote_nums_${lote}`);
 });
 
-/* ==============================
-   MOTOR PRINCIPAL
-   ============================== */
-
-document.getElementById("nuevoNumero").onchange = e =>{
+/* =========================
+   INGRESO NÚMEROS
+   ========================= */
+document.getElementById("nuevoNumero").onchange = e=>{
   const v = parseInt(e.target.value);
   if(isNaN(v)) return;
 
   ultimos.unshift(v);
-  if(ultimos.length > 16) ultimos.pop();
+  if(ultimos.length>16) ultimos.pop();
 
   render();
-  controlarLotes();
+  controlarLotes(v);   // <-- ahora analiza el número nuevo
 
-  e.target.value = "";
+  e.target.value="";
 };
 
 function render(){
   cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
 
-  if(ultimos.length >= 16){
-    const vista16 = document.getElementById("vista16");
-    const vista5  = document.getElementById("vista5");
+  if(ultimos.length>=16){
+    const v16=document.getElementById("vista16");
+    const v5=document.getElementById("vista5");
+    if(v16) v16.remove();
+    v5.classList.remove("hidden");
 
-    if(vista16) vista16.remove();
-    vista5.classList.remove("hidden");
-
-    const ult5 = ultimos.slice(0,5);
-    cas5.forEach((c,i)=> c.value = ult5[i] ?? "");
+    const ult5=ultimos.slice(0,5);
+    cas5.forEach((c,i)=> c.value=ult5[i] ?? "");
   }
 }
 
-/* ==============================
-   ACTIVACIÓN SEGÚN TUS REGLAS
-   ============================== */
-
-function controlarLotes(){
+/* =========================
+   REGLAS + AHORA BUSCA
+   ========================= */
+function controlarLotes(ultimoNumero){
 
   Object.keys(LOTES).forEach(lote=>{
-
     const st = estadoLotes[lote];
 
-    // si está activo → revisar cancelación por regla
+    // --- si está activo ---
     if(st.activo){
+
       st.contador++;
 
-      const pos1 = ultimos.indexOf(st.pareja[0]);
-      const pos2 = ultimos.indexOf(st.pareja[1]);
-
-      // si ya ninguno está dentro de 0..7 → cancelar
-      if( (pos1 === -1 || pos1 > 7) && (pos2 === -1 || pos2 > 7) ){
-        st.activo = false;
-        st.slotNumeros.value = "";
+      // 1) si aparece uno buscado → termina
+      if(st.busca.includes(ultimoNumero)){
+        st.activo=false;
+        st.slot.value="";
         return;
       }
 
-      // si llegó a 8 tiradas → termina
-      if(st.contador >= 8){
-        st.activo = false;
-        st.slotNumeros.value = "";
+      // 2) cancelar si ya ninguno está en los primeros 8
+      const pos1 = ultimos.indexOf(st.pareja[0]);
+      const pos2 = ultimos.indexOf(st.pareja[1]);
+
+      if( (pos1===-1 || pos1>7) && (pos2===-1 || pos2>7) ){
+        st.activo=false;
+        st.slot.value="";
+        return;
+      }
+
+      // 3) cancelar si llegó a 8 tiradas
+      if(st.contador>=8){
+        st.activo=false;
+        st.slot.value="";
       }
 
       return;
     }
 
-    // si NO está activo → buscar si alguna pareja debe activarse
+    // --- si NO está activo, ver si debe activarse ---
     for(const p of LOTES[lote]){
 
       const pos1 = ultimos.indexOf(p.pareja[0]);
       const pos2 = ultimos.indexOf(p.pareja[1]);
+      if(pos1===-1 || pos2===-1) continue;
 
-      if(pos1 === -1 || pos2 === -1) continue;
+      const dist = Math.abs(pos1-pos2);
+      const unoEnPrimerosOcho = (pos1<=7 && pos1>=0) || (pos2<=7 && pos2>=0);
 
-      const dist = Math.abs(pos1 - pos2);
-
-      const unoEnPrimerosOcho =
-        (pos1 >=0 && pos1 <=7) ||
-        (pos2 >=0 && pos2 <=7);
-
-      if(dist <= 8 && unoEnPrimerosOcho){
-
-        st.activo = true;
-        st.pareja = p.pareja;
-        st.busca  = p.busca;
-        st.contador = 0;
-
-        st.slotNumeros.value = p.busca.join(" ");
+      if(dist<=8 && unoEnPrimerosOcho){
+        st.activo=true;
+        st.pareja=p.pareja;
+        st.busca=p.busca;
+        st.contador=0;
+        st.slot.value=p.busca.join(" ");
         break;
       }
     }
-
   });
-
 }
 
 function reiniciar(){
@@ -335,4 +314,5 @@ function reiniciar(){
 </script>
 
 </body>
-</html>
+      </html>
+        
