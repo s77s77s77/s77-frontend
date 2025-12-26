@@ -122,7 +122,7 @@ function login(){
 }
 
 /*
- LOTE A — según PRUEBA FINAL
+  LOTE A — (PRUEBA)
 */
 const LOTES = {
   A:[
@@ -138,7 +138,6 @@ const LOTES = {
 
 const numerosDelLoteA = [6,34,27,5,10,24,13,36];
 
-/* estado Lote A */
 const estado = {
   activo:false,
   pareja:null,
@@ -159,7 +158,7 @@ box.innerHTML=`
 zona.appendChild(box);
 estado.slot=document.getElementById("lote_nums_A");
 
-/* utilidades */
+/* posiciones */
 function posicionesDe(num){
   const arr=[];
   for(let i=0;i<ultimos.length;i++){
@@ -194,60 +193,51 @@ function render(){
   }
 }
 
-/* ================
-   MOTOR REGLAS
-   ================ */
+/* ======================
+   MOTOR — REGLAS CORRECTAS
+   ====================== */
 function motor(){
 
   // --- si hay búsqueda activa ---
   if(estado.activo){
 
-    // ¿aparece algún número "busca"?
-    let encontrada = false;
-    let posCierre = null;
-
+    // ✔️ cierre: cualquiera de los BUSCA que esté dentro de los 16
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
-        encontrada = true;
-        posCierre = i;
-        break;
+        estado.activo=false;
+        estado.slot.value="";
+        estado.ultimoCierrePos=i;
+        estado.bloqueado=true;
+        return;
       }
     }
 
-    if(encontrada){
-      // cerrar búsqueda (también cuenta como cierre del lote)
-      estado.activo=false;
-      estado.slot.value="";
-      estado.ultimoCierrePos = posCierre;
-      estado.bloqueado = true;
-      return;
-    }
-
-    // repetir números de la pareja: no pasa nada
+    // repetir números de la pareja: no afecta
     return;
   }
 
-  // --- si está bloqueado (post éxito) ---
+  // --- si está bloqueado luego de cierre exitoso ---
   if(estado.bloqueado && estado.ultimoCierrePos !== null){
 
-    // buscamos el próximo número del lote
     for(let i=0;i<ultimos.length;i++){
       if(numerosDelLoteA.includes(ultimos[i])){
-
         const dist = Math.abs(i - estado.ultimoCierrePos);
 
-        // si está a 7 o más → se libera
+        // 🔐 si es MENOR a 7 → sigue bloqueado
+        if(dist < 7) return;
+
+        // ✔️ si es 7 o más → libera
         if(dist >= 7){
-          estado.bloqueado = false;
-          // seguimos y permitimos buscar de nuevo
-        } else {
-          return; // sigue bloqueado
+          estado.bloqueado=false;
+          break;
         }
       }
     }
   }
 
-  // --- intentar activar ---
+  // --- activar búsqueda (solo si hay 16 números) ---
+  if(ultimos.length < 16) return;
+
   for(const p of LOTES.A){
 
     const posA = posicionesDe(p.pareja[0]);
@@ -274,7 +264,21 @@ function motor(){
       estado.activo=true;
       estado.pareja=p.pareja;
       estado.busca=p.busca;
+
+      // mostrar
       estado.slot.value=p.busca.join(" ");
+
+      // ✔️ ATENCIÓN:
+      // inmediatamente revisamos si ya hay uno de los BUSCA en los 16
+      for(let i=0;i<ultimos.length;i++){
+        if(estado.busca.includes(ultimos[i])){
+          estado.activo=false;
+          estado.slot.value="";
+          estado.ultimoCierrePos=i;
+          estado.bloqueado=true;
+        }
+      }
+
       break;
     }
   }
