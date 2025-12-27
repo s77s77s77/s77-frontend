@@ -24,13 +24,12 @@ button{background:maroon;color:white;font-weight:bold}
 .lotes-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .lote-box{display:grid;grid-template-columns:1fr 70px;gap:10px}
 
-/* 👉 SOLO ESTO CAMBIÓ */
 .lote-numeros{
   height:55px;
   border-radius:10px;
   background:#111;
   border:3px solid #444;
-  color:#fff;            /* texto blanco */
+  color:#fff;
   font-size:22px;
   font-weight:bold;
   text-align:center;
@@ -112,6 +111,7 @@ function login(){
   document.getElementById("s77").classList.remove("hidden");
 }
 
+/* LOTE A */
 const LOTES={
   A:[
     { pareja:[6,34], busca:[27,5,10,24,13,36] },
@@ -123,8 +123,6 @@ const LOTES={
     { pareja:[13,36], busca:[6,34,27,5,10,24] }
   ]
 };
-
-const numerosDelLoteA=[6,34,27,5,10,24,13,36];
 
 const estado={
   activo:false,
@@ -174,19 +172,25 @@ function render(){
     const v5=document.getElementById("vista5");
     if(v16) v16.remove();
     v5.classList.remove("hidden");
+
     const ult5=ultimos.slice(0,5);
     cas5.forEach((c,i)=>c.value=ult5[i]??"");
   }
 }
 
+/* MOTOR — ahora usa SOLO los números “busca” */
 function motor(){
 
+  // borrar después de cierre instantáneo
   if(estado.pendienteBorrar){
     estado.slot.value="";
     estado.pendienteBorrar=false;
   }
 
+  // búsqueda activa
   if(estado.activo){
+
+    // cerrar si alguno de los BUSCA está entre los 16
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
         estado.activo=false;
@@ -199,11 +203,15 @@ function motor(){
     return;
   }
 
+  // bloqueo luego de éxito
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
+
+    // 👇 ahora mira SOLO los números “busca” de la pareja anterior
     for(let i=0;i<ultimos.length;i++){
-      if(numerosDelLoteA.includes(ultimos[i])){
+      if(estado.busca.includes(ultimos[i])){
         const dist=Math.abs(i-estado.ultimoCierrePos);
-        if(dist<7) return;
+
+        if(dist<7) return;      // sigue bloqueado
         if(dist>=7){
           estado.bloqueado=false;
           break;
@@ -212,28 +220,38 @@ function motor(){
     }
   }
 
+  // necesita 16 para empezar
   if(ultimos.length<16) return;
 
+  // intentar activar
   for(const p of LOTES.A){
+
     const posA=posicionesDe(p.pareja[0]);
     const posB=posicionesDe(p.pareja[1]);
     if(!posA.length||!posB.length) continue;
 
     let puede=false;
+
     for(const a of posA){
       for(const b of posB){
         const dist=Math.abs(a-b);
         const unoEn8=(a<=7||b<=7);
         if(dist<=8 && unoEn8){puede=true;break;}
       }
-      if(puede) break;
+      if(puede)break;
     }
 
     if(puede){
+
+      // activar SOLO esta pareja
       estado.activo=true;
+      estado.pareja=p.pareja;
       estado.busca=p.busca;
+
+      // mostrar SOLO sus números
       estado.slot.value=p.busca.join(" ");
 
+      // cierre inmediato si ya estaba alguno
       for(let i=0;i<ultimos.length;i++){
         if(estado.busca.includes(ultimos[i])){
           estado.activo=false;
@@ -242,6 +260,7 @@ function motor(){
           estado.pendienteBorrar=true;
         }
       }
+
       break;
     }
   }
@@ -252,4 +271,4 @@ function reiniciar(){location.reload();}
 
 </body>
   </html>
-  
+        
