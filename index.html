@@ -111,8 +111,8 @@ function login(){
   document.getElementById("s77").classList.remove("hidden");
 }
 
-/* LOTE A */
-const LOTES={
+/* === LOTE A === */
+const LOTES = {
   A:[
     { pareja:[6,34], busca:[27,5,10,24,13,36] },
     { pareja:[34,27], busca:[5,10,24,13,36,6] },
@@ -124,7 +124,9 @@ const LOTES={
   ]
 };
 
-const estado={
+const numerosDelLoteA=[6,34,27,5,10,24,13,36];
+
+const estado = {
   activo:false,
   pareja:null,
   busca:[],
@@ -178,19 +180,17 @@ function render(){
   }
 }
 
-/* MOTOR — ahora usa SOLO los números “busca” */
+/* ===== MOTOR COMPLETAMENTE NUEVO ===== */
 function motor(){
 
-  // borrar después de cierre instantáneo
   if(estado.pendienteBorrar){
     estado.slot.value="";
     estado.pendienteBorrar=false;
   }
 
-  // búsqueda activa
+  // 🔹 búsqueda activa
   if(estado.activo){
 
-    // cerrar si alguno de los BUSCA está entre los 16
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
         estado.activo=false;
@@ -203,15 +203,13 @@ function motor(){
     return;
   }
 
-  // bloqueo luego de éxito
+  // 🔹 bloqueo después de acierto
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
 
-    // 👇 ahora mira SOLO los números “busca” de la pareja anterior
     for(let i=0;i<ultimos.length;i++){
-      if(estado.busca.includes(ultimos[i])){
+      if(numerosDelLoteA.includes(ultimos[i])){
         const dist=Math.abs(i-estado.ultimoCierrePos);
-
-        if(dist<7) return;      // sigue bloqueado
+        if(dist<7) return;
         if(dist>=7){
           estado.bloqueado=false;
           break;
@@ -220,10 +218,10 @@ function motor(){
     }
   }
 
-  // necesita 16 para empezar
+  // 🔹 no arranca hasta 16 cargados
   if(ultimos.length<16) return;
 
-  // intentar activar
+  // 🔹 activar pareja correcta
   for(const p of LOTES.A){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -236,22 +234,23 @@ function motor(){
       for(const b of posB){
         const dist=Math.abs(a-b);
         const unoEn8=(a<=7||b<=7);
-        if(dist<=8 && unoEn8){puede=true;break;}
+        if(dist<=8 && unoEn8){
+          puede=true;
+          break;
+        }
       }
-      if(puede)break;
+      if(puede) break;
     }
 
     if(puede){
 
-      // activar SOLO esta pareja
       estado.activo=true;
       estado.pareja=p.pareja;
       estado.busca=p.busca;
 
-      // mostrar SOLO sus números
       estado.slot.value=p.busca.join(" ");
 
-      // cierre inmediato si ya estaba alguno
+      // cierre inmediato si ya existía un buscado
       for(let i=0;i<ultimos.length;i++){
         if(estado.busca.includes(ultimos[i])){
           estado.activo=false;
@@ -270,5 +269,5 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-  </html>
+    </html>
         
