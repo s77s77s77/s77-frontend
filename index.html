@@ -82,7 +82,6 @@ const estado={
   busca:[],
   ultimoCierrePos:null,
   bloqueado:false,
-  pendienteBorrar:false,
   slot:document.getElementById("arg_nums")
 };
 
@@ -97,6 +96,7 @@ document.getElementById("nuevoNumero").onchange=e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v)) return;
 
+  // ingreso en orden natural (el último es el más nuevo)
   ultimos.push(v);
   if(ultimos.length>16) ultimos.shift();
 
@@ -129,42 +129,44 @@ function posicionesDe(num){
 
 function motor(){
 
-  if(estado.pendienteBorrar){
-    estado.slot.value="";
-    estado.pendienteBorrar=false;
-  }
-
-  // 🔹 BÚSQUEDA ACTIVA
+  // 🔹 si está activo, verificar cierre
   if(estado.activo){
 
-    // 👇 CORRECCIÓN: cerrar apenas aparece cualquiera
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
+
+        // cierre inmediato
         estado.activo=false;
         estado.ultimoCierrePos=i;
         estado.bloqueado=true;
-        estado.pendienteBorrar=true;
+
+        // LIMPIAR YA MISMO
+        estado.slot.value = "";
+
         return;
       }
     }
     return;
   }
 
-  // 🔹 BLOQUEO
+  // 🔹 bloqueo luego de acierto
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
 
     for(let i=0;i<ultimos.length;i++){
       if(numerosDelLote.includes(ultimos[i])){
         const dist=Math.abs(i-estado.ultimoCierrePos);
         if(dist<7) return;
-        if(dist>=7){estado.bloqueado=false;break;}
+        if(dist>=7){
+          estado.bloqueado=false;
+          break;
+        }
       }
     }
   }
 
   if(ultimos.length<16) return;
 
-  // 🔹 ACTIVAR
+  // 🔹 activar pareja
   for(const p of LOTES){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -176,8 +178,14 @@ function motor(){
     for(const a of posA){
       for(const b of posB){
         const dist=Math.abs(a-b);
+
+        // uno en los últimos 8
         const unoEn8=(a>=ultimos.length-8 || b>=ultimos.length-8);
-        if(dist<=8 && unoEn8){puede=true;break;}
+
+        if(dist<=8 && unoEn8){
+          puede=true;
+          break;
+        }
       }
       if(puede) break;
     }
@@ -186,6 +194,8 @@ function motor(){
 
       estado.activo=true;
       estado.busca=p.busca;
+
+      // mostrar búsqueda
       estado.slot.value=p.busca.join(" ");
 
       // cierre inmediato si ya estaba alguno
@@ -194,9 +204,10 @@ function motor(){
           estado.activo=false;
           estado.ultimoCierrePos=i;
           estado.bloqueado=true;
-          estado.pendienteBorrar=true;
+          estado.slot.value="";
         }
       }
+
       break;
     }
   }
