@@ -1,219 +1,78 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Sistema ARGENTINA</title>
+<title>Prueba simple</title>
 
 <style>
-body{font-family:Arial,sans-serif;background:black;color:#fff;text-align:center;padding:20px}
-.panel{max-width:520px;margin:15px auto;padding:15px;border-radius:12px;background:black}
-.hidden{display:none}
-input,button{padding:10px;border-radius:8px;border:none;margin:5px}
-button{background:maroon;color:white;font-weight:bold}
-
-.inputs{display:grid;grid-template-columns:repeat(4,70px);gap:12px;justify-content:center}
-.inputs input{width:70px;height:70px;font-size:34px;font-weight:bold;text-align:center;border:4px solid red;background:white;color:black}
-
-.inputs5{display:flex;flex-direction:column;gap:8px;margin:0}
-.inputs5 input{width:55px;height:55px;font-size:26px;font-weight:bold;text-align:center;border:3px solid red;background:white;color:black}
-
-.nuevo{width:70px;height:70px;font-size:34px;text-align:center;border:4px solid red;background:#7fd3ff}
-
-.tablero{margin-top:20px;display:flex;justify-content:center;align-items:flex-start;gap:25px}
-
-.lote-box{display:grid;grid-template-columns:1fr 70px;gap:10px}
-.lote-numeros{
-  height:55px;border-radius:10px;background:#111;border:3px solid #444;
-  color:#fff;font-size:22px;font-weight:bold;text-align:center
-}
-.lote-caramelos{
-  height:55px;border-radius:10px;background:#222;border:3px solid #888;
-  color:yellow;font-size:26px;font-weight:bold;text-align:center
+body{background:black;color:white;font-family:Arial;text-align:center;padding:20px}
+input{padding:10px;font-size:20px}
+.box{
+  margin-top:20px;
+  padding:15px;
+  border:3px solid #555;
+  background:#111;
+  font-size:26px;
+  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🇦🇷 Lote ARGENTINA</h1>
+<h2>Prueba — pareja 5-6</h2>
 
-<div class="panel">
-
-  <h3>NUEVO NÚMERO</h3>
-
-  <div style="display:flex;justify-content:center;">
-    <div>
-      <input class="nuevo" id="nuevoNumero" type="number">
-      <br>
-      <button onclick="reiniciar()">REINICIAR</button>
-    </div>
-  </div>
-
-  <div id="zonaNumeros">
-    <div class="inputs" id="vista16">
-      <input disabled><input disabled><input disabled><input disabled>
-      <input disabled><input disabled><input disabled><input disabled>
-      <input disabled><input disabled><input disabled><input disabled>
-      <input disabled><input disabled><input disabled><input disabled>
-    </div>
-  </div>
-
-  <div class="tablero">
-    <div class="inputs5 hidden" id="vista5">
-      <input disabled><input disabled><input disabled><input disabled><input disabled>
-    </div>
-
-    <div class="lote-box">
-      <input class="lote-numeros" id="arg_nums">
-      <input class="lote-caramelos" disabled>
-    </div>
-  </div>
-
-</div>
+<input id="n" type="number" placeholder="ingresar número">
+<div class="box" id="busca">—</div>
 
 <script>
-let ultimos=[];
+let ultimos = [];
 
-const cas16=[...document.querySelectorAll("#vista16 input")];
-const cas5=[...document.querySelectorAll("#vista5 input")];
+// ✔️ definimos 1 pareja y sus números a buscar
+const pareja = [5,6];
+const busca = [7,8,9];
 
-const estado={
-  activo:false,
-  busca:[],
-  ultimoCierrePos:null,
-  bloqueado:false,
-  slot:document.getElementById("arg_nums")
-};
+let buscando = false;
 
-const LOTES = [
-  { pareja:[5,6], busca:[7,8,9] },
-  { pareja:[30,31], busca:[20,21,22,23] }
-];
+document.getElementById("n").onchange = e => {
 
-const numerosDelLote=[5,6,7,8,9,20,21,22,23,30,31];
-
-document.getElementById("nuevoNumero").onchange=e=>{
-  const v=parseInt(e.target.value);
+  const v = parseInt(e.target.value);
   if(isNaN(v)) return;
 
-  // ingreso en orden natural (el último es el más nuevo)
+  // mantener siempre los últimos 16
   ultimos.push(v);
-  if(ultimos.length>16) ultimos.shift();
+  if(ultimos.length > 16) ultimos.shift();
 
-  render();
   motor();
-  e.target.value="";
+
+  e.target.value = "";
 };
-
-function render(){
-  cas16.forEach((c,i)=>c.value=ultimos[i]??"");
-
-  if(ultimos.length>=16){
-    const v16=document.getElementById("vista16");
-    const v5=document.getElementById("vista5");
-    if(v16) v16.remove();
-    v5.classList.remove("hidden");
-
-    const ult5=ultimos.slice(-5);
-    cas5.forEach((c,i)=>c.value=ult5[i]??"");
-  }
-}
-
-function posicionesDe(num){
-  const arr=[];
-  for(let i=0;i<ultimos.length;i++){
-    if(ultimos[i]===num) arr.push(i);
-  }
-  return arr;
-}
 
 function motor(){
 
-  // 🔹 si está activo, verificar cierre
-  if(estado.activo){
-
-    for(let i=0;i<ultimos.length;i++){
-      if(estado.busca.includes(ultimos[i])){
-
-        // cierre inmediato
-        estado.activo=false;
-        estado.ultimoCierrePos=i;
-        estado.bloqueado=true;
-
-        // LIMPIAR YA MISMO
-        estado.slot.value = "";
-
+  // 👉 si estamos buscando y aparece cualquiera: cancelar
+  if(buscando){
+    for(const num of ultimos){
+      if(busca.includes(num)){
+        buscando = false;
+        document.getElementById("busca").innerText = "—";
         return;
       }
     }
-    return;
   }
 
-  // 🔹 bloqueo luego de acierto
-  if(estado.bloqueado && estado.ultimoCierrePos!==null){
+  // 👉 activar solo si NO está buscando
+  if(!buscando){
 
-    for(let i=0;i<ultimos.length;i++){
-      if(numerosDelLote.includes(ultimos[i])){
-        const dist=Math.abs(i-estado.ultimoCierrePos);
-        if(dist<7) return;
-        if(dist>=7){
-          estado.bloqueado=false;
-          break;
-        }
-      }
-    }
-  }
+    const tiene5 = ultimos.includes(5);
+    const tiene6 = ultimos.includes(6);
 
-  if(ultimos.length<16) return;
-
-  // 🔹 activar pareja
-  for(const p of LOTES){
-
-    const posA=posicionesDe(p.pareja[0]);
-    const posB=posicionesDe(p.pareja[1]);
-    if(!posA.length||!posB.length) continue;
-
-    let puede=false;
-
-    for(const a of posA){
-      for(const b of posB){
-        const dist=Math.abs(a-b);
-
-        // uno en los últimos 8
-        const unoEn8=(a>=ultimos.length-8 || b>=ultimos.length-8);
-
-        if(dist<=8 && unoEn8){
-          puede=true;
-          break;
-        }
-      }
-      if(puede) break;
-    }
-
-    if(puede){
-
-      estado.activo=true;
-      estado.busca=p.busca;
-
-      // mostrar búsqueda
-      estado.slot.value=p.busca.join(" ");
-
-      // cierre inmediato si ya estaba alguno
-      for(let i=0;i<ultimos.length;i++){
-        if(estado.busca.includes(ultimos[i])){
-          estado.activo=false;
-          estado.ultimoCierrePos=i;
-          estado.bloqueado=true;
-          estado.slot.value="";
-        }
-      }
-
-      break;
+    if(tiene5 && tiene6){
+      buscando = true;
+      document.getElementById("busca").innerText = busca.join(" ");
     }
   }
 }
-
-function reiniciar(){location.reload();}
 </script>
 
 </body>
