@@ -134,8 +134,10 @@ function motor(){
     estado.pendienteBorrar=false;
   }
 
+  // 🔹 BÚSQUEDA ACTIVA
   if(estado.activo){
 
+    // 👇 CORRECCIÓN: cerrar apenas aparece cualquiera
     for(let i=0;i<ultimos.length;i++){
       if(estado.busca.includes(ultimos[i])){
         estado.activo=false;
@@ -148,6 +150,7 @@ function motor(){
     return;
   }
 
+  // 🔹 BLOQUEO
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
 
     for(let i=0;i<ultimos.length;i++){
@@ -161,6 +164,7 @@ function motor(){
 
   if(ultimos.length<16) return;
 
+  // 🔹 ACTIVAR
   for(const p of LOTES){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -184,6 +188,7 @@ function motor(){
       estado.busca=p.busca;
       estado.slot.value=p.busca.join(" ");
 
+      // cierre inmediato si ya estaba alguno
       for(let i=0;i<ultimos.length;i++){
         if(estado.busca.includes(ultimos[i])){
           estado.activo=false;
@@ -201,5 +206,4 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-                                                                        </html>
-  
+</html>
