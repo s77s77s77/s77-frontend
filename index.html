@@ -86,7 +86,6 @@ const estado={
   slot:document.getElementById("arg_nums")
 };
 
-// === DEFINICIÓN DEL LOTE ===
 const LOTES = [
   { pareja:[5,6], busca:[7,8,9] },
   { pareja:[30,31], busca:[20,21,22,23] }
@@ -98,8 +97,8 @@ document.getElementById("nuevoNumero").onchange=e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v)) return;
 
-  ultimos.unshift(v);
-  if(ultimos.length>16) ultimos.pop();
+  ultimos.push(v);
+  if(ultimos.length>16) ultimos.shift();
 
   render();
   motor();
@@ -115,7 +114,7 @@ function render(){
     if(v16) v16.remove();
     v5.classList.remove("hidden");
 
-    const ult5=ultimos.slice(0,5);
+    const ult5=ultimos.slice(-5);
     cas5.forEach((c,i)=>c.value=ult5[i]??"");
   }
 }
@@ -135,7 +134,6 @@ function motor(){
     estado.pendienteBorrar=false;
   }
 
-  // BÚSQUEDA ACTIVA
   if(estado.activo){
 
     for(let i=0;i<ultimos.length;i++){
@@ -150,7 +148,6 @@ function motor(){
     return;
   }
 
-  // BLOQUEO
   if(estado.bloqueado && estado.ultimoCierrePos!==null){
 
     for(let i=0;i<ultimos.length;i++){
@@ -164,7 +161,6 @@ function motor(){
 
   if(ultimos.length<16) return;
 
-  // ACTIVAR PAREJA
   for(const p of LOTES){
 
     const posA=posicionesDe(p.pareja[0]);
@@ -176,7 +172,7 @@ function motor(){
     for(const a of posA){
       for(const b of posB){
         const dist=Math.abs(a-b);
-        const unoEn8=(a<=7||b<=7);
+        const unoEn8=(a>=ultimos.length-8 || b>=ultimos.length-8);
         if(dist<=8 && unoEn8){puede=true;break;}
       }
       if(puede) break;
@@ -205,5 +201,5 @@ function reiniciar(){location.reload();}
 </script>
 
 </body>
-      </html>
+                                                                        </html>
   
