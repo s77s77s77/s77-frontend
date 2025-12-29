@@ -6,26 +6,30 @@
 
 <style>
 body{
-  font-family:Arial,sans-serif;
-  background:black;
-  color:#fff;
-  text-align:center;
-  padding:20px;
+  font-family: Arial, sans-serif;
+  background: black;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
 }
+
 .panel{
-  max-width:520px;
-  margin:15px auto;
-  padding:15px;
-  border-radius:12px;
-  background:black;
+  max-width: 520px;
+  margin: 15px auto;
+  padding: 15px;
+  border-radius: 12px;
+  background: black;
 }
-.hidden{display:none}
-input,button{
+
+.hidden{ display:none }
+
+input,select,button{
   padding:10px;
   border-radius:8px;
   border:none;
   margin:5px;
 }
+
 button{
   background:maroon;
   color:white;
@@ -39,7 +43,8 @@ button{
   justify-content:center;
 }
 
-.inputs input{
+.inputs input,
+.inputs5 input{
   width:70px;
   height:70px;
   font-size:34px;
@@ -48,6 +53,13 @@ button{
   border:4px solid red;
   background:white;
   color:black;
+}
+
+.inputs5{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:10px;
 }
 
 .nuevo{
@@ -73,6 +85,21 @@ button{
   padding:15px;
   border-radius:8px;
 }
+
+.totalBox input{
+  width:80px;
+  height:50px;
+  font-size:28px;
+  text-align:center;
+  border-radius:8px;
+}
+
+/* pequeña línea de debug */
+#debug{
+  color:#7fd3ff;
+  font-size:12px;
+  margin-top:10px;
+}
 </style>
 </head>
 
@@ -80,7 +107,6 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- LOGIN -->
 <div class="panel" id="login">
   <h2>INGRESAR CLAVE</h2>
   <input id="clave">
@@ -89,7 +115,6 @@ button{
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- ADMIN -->
 <div class="panel hidden" id="admin">
   <h2>ADMINISTRADOR</h2>
   <input id="nuevaClave" placeholder="Clave usuario">
@@ -102,16 +127,27 @@ button{
   <button onclick="crearUsuario()">CREAR USUARIO</button>
 </div>
 
-<!-- S77 -->
 <div class="panel hidden" id="s77">
 
-  <h2>ÚLTIMOS 16 NÚMEROS</h2>
+  <h2>ÚLTIMOS NÚMEROS</h2>
 
-  <div class="inputs" id="vista16">
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
-    <input disabled><input disabled><input disabled><input disabled>
+  <div id="zonaNumeros">
+
+    <div class="inputs" id="vista16">
+      <input disabled><input disabled><input disabled><input disabled>
+      <input disabled><input disabled><input disabled><input disabled>
+      <input disabled><input disabled><input disabled><input disabled>
+      <input disabled><input disabled><input disabled><input disabled>
+    </div>
+
+    <div class="inputs5 hidden" id="vista5">
+      <input disabled>
+      <input disabled>
+      <input disabled>
+      <input disabled>
+      <input disabled>
+    </div>
+
   </div>
 
   <h3>NUEVO NÚMERO</h3>
@@ -122,6 +158,14 @@ button{
       <br>
       <button onclick="reiniciar()">REINICIAR</button>
     </div>
+
+    <div class="totalBox">
+      <div><strong>TOTAL</strong></div>
+      <input id="total" disabled>
+      <br><br>
+      <div><strong>FICHAS</strong></div>
+      <input id="fichas" disabled>
+    </div>
   </div>
 
   <h3>FAVORITOS</h3>
@@ -130,6 +174,7 @@ button{
   <h3>EXPLOSIVOS</h3>
   <div class="explosivos" id="exp">—</div>
 
+  <div id="debug">Esperando…</div>
 </div>
 
 <script>
@@ -137,8 +182,10 @@ const API = "https://s77-backend.onrender.com";
 
 let ultimos = [];
 let adminClave = null;
+let totalAcumulado = 0;
 
 const cas16 = [...document.querySelectorAll("#vista16 input")];
+const cas5  = [...document.querySelectorAll("#vista5 input")];
 
 async function login(){
   const clave = document.getElementById("clave").value;
@@ -187,37 +234,66 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   render();
 
-  const r = await fetch(API + "/calcular", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ultimos })
-  });
+  /* ⭐⭐ DESDE ACÁ — siempre calculamos cuando hay 16 o más ⭐⭐ */
+  if (ultimos.length >= 16){
 
-  const d = await r.json();
+    document.getElementById("debug").innerText = "Consultando backend...";
 
-  // 👉 AHORA: SOLO MOSTRAMOS FAVORITOS DEL BACKEND
-  document.getElementById("fav").innerText =
-    d.favoritos.length ? d.favoritos.join(", ") : "—";
+    try{
+      const r = await fetch(API + "/calcular", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ultimos })
+      });
 
-  // (explosivos por ahora queda vacío, como pediste)
-  document.getElementById("exp").innerText =
-    d.explosivos.length ? d.explosivos.join(", ") : "—";
+      const d = await r.json();
+
+      document.getElementById("debug").innerText =
+        "Respuesta backend: " + JSON.stringify(d);
+
+      totalAcumulado += (d.favoritos?.length || 0) + (d.explosivos?.length || 0);
+
+      document.getElementById("total").value = totalAcumulado;
+      document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
+
+      document.getElementById("fav").innerText =
+        d.favoritos?.length ? d.favoritos.join(", ") : "—";
+
+      document.getElementById("exp").innerText =
+        d.explosivos?.length ? d.explosivos.join(", ") : "—";
+
+    } catch (err){
+      document.getElementById("debug").innerText =
+        "ERROR llamando backend";
+    }
+  }
 
   e.target.value = "";
 };
 
 function render(){
+
   cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
+
+  if (ultimos.length >= 16){
+
+    const vista16 = document.getElementById("vista16");
+    const vista5  = document.getElementById("vista5");
+
+    if (vista16) vista16.remove();
+
+    vista5.classList.remove("hidden");
+
+    const ult5 = ultimos.slice(0,5);
+    cas5.forEach((c,i)=> c.value = ult5[i] ?? "");
+  }
 }
 
 function reiniciar(){
-  ultimos = [];
-  render();
-  fav.innerText = "—";
-  exp.innerText = "—";
+  location.reload();
 }
 </script>
 
 </body>
-  </html>
-    
+    </html>
+  
