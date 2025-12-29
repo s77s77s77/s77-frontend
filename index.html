@@ -93,13 +93,6 @@ button{
   text-align:center;
   border-radius:8px;
 }
-
-/* pequeña línea de debug */
-#debug{
-  color:#7fd3ff;
-  font-size:12px;
-  margin-top:10px;
-}
 </style>
 </head>
 
@@ -174,7 +167,6 @@ button{
   <h3>EXPLOSIVOS</h3>
   <div class="explosivos" id="exp">—</div>
 
-  <div id="debug">Esperando…</div>
 </div>
 
 <script>
@@ -234,38 +226,26 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
   render();
 
-  /* ⭐⭐ DESDE ACÁ — siempre calculamos cuando hay 16 o más ⭐⭐ */
   if (ultimos.length >= 16){
 
-    document.getElementById("debug").innerText = "Consultando backend...";
+    const r = await fetch(API + "/calcular", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ultimos })
+    });
 
-    try{
-      const r = await fetch(API + "/calcular", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ultimos })
-      });
+    const d = await r.json();
 
-      const d = await r.json();
+    totalAcumulado += (d.favoritos?.length || 0) + (d.explosivos?.length || 0);
 
-      document.getElementById("debug").innerText =
-        "Respuesta backend: " + JSON.stringify(d);
+    document.getElementById("total").value = totalAcumulado;
+    document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
 
-      totalAcumulado += (d.favoritos?.length || 0) + (d.explosivos?.length || 0);
+    document.getElementById("fav").innerText =
+      d.favoritos?.length ? d.favoritos.join(", ") : "—";
 
-      document.getElementById("total").value = totalAcumulado;
-      document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
-
-      document.getElementById("fav").innerText =
-        d.favoritos?.length ? d.favoritos.join(", ") : "—";
-
-      document.getElementById("exp").innerText =
-        d.explosivos?.length ? d.explosivos.join(", ") : "—";
-
-    } catch (err){
-      document.getElementById("debug").innerText =
-        "ERROR llamando backend";
-    }
+    document.getElementById("exp").innerText =
+      d.explosivos?.length ? d.explosivos.join(", ") : "—";
   }
 
   e.target.value = "";
@@ -295,5 +275,5 @@ function reiniciar(){
 </script>
 
 </body>
-    </html>
+                           </html>
   
