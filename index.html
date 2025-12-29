@@ -12,7 +12,6 @@ body{
   text-align: center;
   padding: 20px;
 }
-
 .panel{
   max-width: 520px;
   margin: 15px auto;
@@ -20,29 +19,24 @@ body{
   border-radius: 12px;
   background: black;
 }
-
 .hidden{ display:none }
-
 input,select,button{
   padding:10px;
   border-radius:8px;
   border:none;
   margin:5px;
 }
-
 button{
   background:maroon;
   color:white;
   font-weight:bold;
 }
-
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
   gap:12px;
   justify-content:center;
 }
-
 .inputs input,
 .inputs5 input{
   width:70px;
@@ -54,14 +48,12 @@ button{
   background:white;
   color:black;
 }
-
 .inputs5{
   display:flex;
   justify-content:center;
   gap:12px;
   margin-top:10px;
 }
-
 .nuevo{
   width:70px;
   height:70px;
@@ -71,21 +63,18 @@ button{
   border:4px solid red;
   background:#7fd3ff;
 }
-
 .favoritos{
   background:green;
   font-size:26px;
   padding:15px;
   border-radius:8px;
 }
-
 .explosivos{
   background:red;
   font-size:48px;
   padding:15px;
   border-radius:8px;
 }
-
 .totalBox input{
   width:80px;
   height:50px;
@@ -170,7 +159,7 @@ button{
 </div>
 
 <script>
-const API = "https://s77-backend.onrender.com";
+const API = "https://s77-backend-1.onrender.com";
 
 let ultimos = [];
 let adminClave = null;
@@ -236,11 +225,7 @@ document.getElementById("nuevoNumero").onchange = async e => {
 
     const d = await r.json();
 
-    totalAcumulado += (d.favoritos?.length || 0) + (d.explosivos?.length || 0);
-
-    document.getElementById("total").value = totalAcumulado;
-    document.getElementById("fichas").value = totalAcumulado > 36 ? 2 : 1;
-
+    // mostrar SIEMPRE lo que venga
     document.getElementById("fav").innerText =
       d.favoritos?.length ? d.favoritos.join(", ") : "—";
 
@@ -275,5 +260,5 @@ function reiniciar(){
 </script>
 
 </body>
-                           </html>
+    </html>
   
