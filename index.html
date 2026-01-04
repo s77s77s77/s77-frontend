@@ -6,66 +6,120 @@
 
 <style>
 body{
-  font-family:Arial,sans-serif;
-  background:black;
-  color:#fff;
+  font-family: "Poppins", Arial, sans-serif;
+  background:#0c0f14;
+  color:#f4f4f4;
   text-align:center;
   padding:20px;
 }
-.panel{
-  max-width:480px;
-  margin:15px auto;
-  padding:15px;
-  border-radius:12px;
-  background:black;
+
+h1,h2,h3{
+  letter-spacing:.5px;
 }
+
+.panel{
+  max-width:520px;
+  margin:15px auto;
+  padding:18px;
+  border-radius:18px;
+  background:linear-gradient(180deg, #0f131a, #0b0e13);
+  box-shadow:0 20px 40px rgba(0,0,0,.45),
+             inset 0 0 0 1px rgba(255,215,0,.08);
+  border:1px solid rgba(255,215,0,.12);
+}
+
 .hidden{display:none}
+
 input,select,button{
   padding:10px;
-  border-radius:8px;
-  border:none;
-  margin:5px;
+  border-radius:10px;
+  border:1px solid rgba(255,215,0,.25);
+  margin:6px;
+  background:#0f131a;
+  color:#ffd782;
 }
+
+input:focus,select:focus{
+  outline:none;
+  box-shadow:0 0 0 2px rgba(255,215,0,.35);
+}
+
 button{
-  background:maroon;
-  color:white;
+  background:linear-gradient(135deg,#c9a646,#ffd782);
+  color:#141414;
   font-weight:bold;
+  cursor:pointer;
+  transition:.25s;
 }
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 20px rgba(255,215,0,.25);
+}
+
 .inputs{
   display:grid;
   grid-template-columns:repeat(4,70px);
   gap:12px;
   justify-content:center;
 }
+
 .inputs input{
   width:70px;height:70px;
-  font-size:34px;
+  font-size:32px;
   font-weight:bold;
   text-align:center;
-  border:4px solid red;
-  background:white;
-  color:black;
+  border:2px solid rgba(255,215,0,.45);
+  background:#0f131a;
+  color:#ffd782;
+  border-radius:14px;
 }
-.inputs input:first-child{background:#7fd3ff;}
+
+.inputs input:first-child{
+  background:#1b2230;
+}
+
 .nuevo{
-  width:70px;height:70px;
-  font-size:34px;
+  width:80px;height:80px;
+  font-size:36px;
   font-weight:bold;
   text-align:center;
-  border:4px solid red;
-  background:#7fd3ff;
+  border:2px solid rgba(255,215,0,.65);
+  background:#1b2230;
+  color:#ffd782;
+  border-radius:16px;
 }
-.favoritos{
-  background:green;
-  font-size:26px;
-  padding:15px;
-  border-radius:8px;
-}
+
+.favoritos,
 .explosivos{
-  background:red;
-  font-size:48px;
-  padding:15px;
-  border-radius:8px;
+  padding:16px;
+  border-radius:14px;
+  min-height:45px;
+  display:inline-block;
+  margin-top:5px;
+  letter-spacing:.5px;
+  transition:.35s;
+}
+
+.favoritos{
+  background:rgba(255,215,0,.12);
+  color:#ffd782;
+  border:1px solid rgba(255,215,0,.3);
+}
+
+.explosivos{
+  background:rgba(255,120,75,.12);
+  color:#ffb29d;
+  border:1px solid rgba(255,120,75,.35);
+}
+
+/* ✨ Animación suave */
+.pulse{
+  animation:pulse .9s ease-out;
+}
+
+@keyframes pulse{
+  0%{ box-shadow:0 0 0 0 rgba(255,215,0,.55); }
+  100%{ box-shadow:0 0 0 25px rgba(255,215,0,0); }
 }
 </style>
 </head>
@@ -99,6 +153,7 @@ button{
 <!-- S77 -->
 <div class="panel hidden" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
+
   <div class="inputs">
     <input disabled><input disabled><input disabled><input disabled>
     <input disabled><input disabled><input disabled><input disabled>
@@ -167,9 +222,12 @@ async function crearUsuario(){
 document.getElementById("nuevoNumero").onchange=async e=>{
   const v=parseInt(e.target.value);
   if(isNaN(v))return;
+
   ultimos.unshift(v);
   if(ultimos.length>16)ultimos.pop();
+
   render();
+
   const r=await fetch(API+"/calcular",{
     method:"POST",
     headers:{
@@ -178,15 +236,30 @@ document.getElementById("nuevoNumero").onchange=async e=>{
     },
     body:JSON.stringify({ultimos})
   });
+
   const d=await r.json();
-  document.getElementById("fav").innerText=d.favoritos.length?d.favoritos.join(", "):"—";
-  document.getElementById("exp").innerText=d.explosivos.length?d.explosivos.join(", "):"—";
+
+  const favBox = document.getElementById("fav");
+  const expBox = document.getElementById("exp");
+
+  favBox.innerText = d.favoritos.length ? d.favoritos.join(", ") : "—";
+  expBox.innerText = d.explosivos.length ? d.explosivos.join(", ") : "—";
+
+  favBox.classList.remove("pulse");
+  expBox.classList.remove("pulse");
+
+  setTimeout(()=>{
+    favBox.classList.add("pulse");
+    expBox.classList.add("pulse");
+  },10);
+
   e.target.value="";
 };
 
 function render(){
   cas.forEach((c,i)=>c.value=ultimos[i]??"");
 }
+
 function reiniciar(){
   ultimos=[];
   render();
@@ -196,6 +269,5 @@ function reiniciar(){
 </script>
 
 </body>
-</html>
-
-                                        
+  </html>
+  
