@@ -13,24 +13,18 @@ body{
   padding:20px;
 }
 
-h1,h2,h3{
-  letter-spacing:.5px;
-}
-
 .panel{
   max-width:520px;
   margin:15px auto;
   padding:18px;
   border-radius:18px;
-  background:linear-gradient(180deg, #0f131a, #0b0e13);
-  box-shadow:0 20px 40px rgba(0,0,0,.45),
-             inset 0 0 0 1px rgba(255,215,0,.08);
+  background:linear-gradient(180deg,#0f131a,#0b0e13);
   border:1px solid rgba(255,215,0,.12);
 }
 
 .hidden{display:none}
 
-input,select,button{
+button,input,select{
   padding:10px;
   border-radius:10px;
   border:1px solid rgba(255,215,0,.25);
@@ -39,21 +33,22 @@ input,select,button{
   color:#ffd782;
 }
 
-input:focus,select:focus{
-  outline:none;
-  box-shadow:0 0 0 2px rgba(255,215,0,.35);
-}
-
 button{
   background:linear-gradient(135deg,#c9a646,#ffd782);
-  color:#141414;
+  color:#111;
   font-weight:bold;
   cursor:pointer;
-  transition:.25s;
 }
-button:hover{
-  transform:translateY(-1px);
-  box-shadow:0 10px 20px rgba(255,215,0,.25);
+
+.status{
+  margin-top:10px;
+  font-size:14px;
+  color:#ffd782;
+  min-height:18px;
+}
+
+.error{
+  color:#ff7a7a;
 }
 
 .inputs{
@@ -66,60 +61,12 @@ button:hover{
 .inputs input{
   width:70px;height:70px;
   font-size:32px;
-  font-weight:bold;
   text-align:center;
-  border:2px solid rgba(255,215,0,.45);
-  background:#0f131a;
-  color:#ffd782;
-  border-radius:14px;
 }
 
-.inputs input:first-child{
-  background:#1b2230;
-}
-
-.nuevo{
-  width:80px;height:80px;
-  font-size:36px;
-  font-weight:bold;
-  text-align:center;
-  border:2px solid rgba(255,215,0,.65);
-  background:#1b2230;
-  color:#ffd782;
-  border-radius:16px;
-}
-
-.favoritos,
-.explosivos{
-  padding:16px;
-  border-radius:14px;
-  min-height:45px;
-  display:inline-block;
-  margin-top:5px;
-  letter-spacing:.5px;
-  transition:.35s;
-}
-
-.favoritos{
-  background:rgba(255,215,0,.12);
-  color:#ffd782;
-  border:1px solid rgba(255,215,0,.3);
-}
-
-.explosivos{
-  background:rgba(255,120,75,.12);
-  color:#ffb29d;
-  border:1px solid rgba(255,120,75,.35);
-}
-
-/* ✨ Animación suave */
-.pulse{
-  animation:pulse .9s ease-out;
-}
-
-@keyframes pulse{
-  0%{ box-shadow:0 0 0 0 rgba(255,215,0,.55); }
-  100%{ box-shadow:0 0 0 25px rgba(255,215,0,0); }
+.favoritos,.explosivos{
+  padding:14px;
+  border-radius:12px;
 }
 </style>
 </head>
@@ -128,16 +75,16 @@ button:hover{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<!-- LOGIN -->
 <div class="panel" id="login">
   <h2>INGRESAR CLAVE</h2>
-  <input id="clave">
+  <input id="clave" placeholder="Clave">
   <br>
   <button onclick="login()">INGRESAR</button>
-  <p id="error" style="color:red;"></p>
+
+  <div id="status" class="status"></div>
+  <p id="error" class="error"></p>
 </div>
 
-<!-- ADMIN -->
 <div class="panel hidden" id="admin">
   <h2>ADMINISTRADOR</h2>
   <input id="nuevaClave" placeholder="Clave usuario">
@@ -150,7 +97,6 @@ button:hover{
   <button onclick="crearUsuario()">CREAR USUARIO</button>
 </div>
 
-<!-- S77 -->
 <div class="panel hidden" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
 
@@ -162,8 +108,7 @@ button:hover{
   </div>
 
   <h3>NUEVO NÚMERO</h3>
-  <input class="nuevo" id="nuevoNumero" type="number">
-  <br>
+  <input id="nuevoNumero" type="number">
   <button onclick="reiniciar()">REINICIAR</button>
 
   <h3>FAVORITOS</h3>
@@ -184,30 +129,55 @@ const cas=[...document.querySelectorAll(".inputs input")];
 
 async function login(){
   const clave=document.getElementById("clave").value;
-  const r=await fetch(API+"/login",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "x-api-key": API_KEY
-    },
-    body:JSON.stringify({clave})
-  });
-  const d=await r.json();
-  if(!d.ok){
-    document.getElementById("error").innerText=d.error;
-    return;
-  }
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
-  if(d.admin){
-    adminClave=clave;
-    document.getElementById("admin").classList.remove("hidden");
+  const status=document.getElementById("status");
+  const error=document.getElementById("error");
+
+  status.innerText="Conectando con el servidor…";
+  error.innerText="";
+
+  try{
+    const r=await fetch(API+"/login",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        "x-api-key": API_KEY
+      },
+      body:JSON.stringify({clave})
+    });
+
+    if(!r.ok){
+      status.innerText="";
+      error.innerText="No se pudo conectar (servidor respondió con error)";
+      return;
+    }
+
+    const d=await r.json();
+
+    status.innerText="";
+
+    if(!d.ok){
+      error.innerText=d.error || "Clave incorrecta";
+      return;
+    }
+
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("s77").classList.remove("hidden");
+
+    if(d.admin){
+      adminClave=clave;
+      document.getElementById("admin").classList.remove("hidden");
+    }
+
+  }catch(e){
+    status.innerText="";
+    error.innerText="No se pudo conectar al servidor. Intenta nuevamente.";
   }
 }
 
 async function crearUsuario(){
   const nuevaClave=document.getElementById("nuevaClave").value;
   const dias=document.getElementById("dias").value;
+
   await fetch(API+"/crear-usuario",{
     method:"POST",
     headers:{
@@ -239,19 +209,8 @@ document.getElementById("nuevoNumero").onchange=async e=>{
 
   const d=await r.json();
 
-  const favBox = document.getElementById("fav");
-  const expBox = document.getElementById("exp");
-
-  favBox.innerText = d.favoritos.length ? d.favoritos.join(", ") : "—";
-  expBox.innerText = d.explosivos.length ? d.explosivos.join(", ") : "—";
-
-  favBox.classList.remove("pulse");
-  expBox.classList.remove("pulse");
-
-  setTimeout(()=>{
-    favBox.classList.add("pulse");
-    expBox.classList.add("pulse");
-  },10);
+  document.getElementById("fav").innerText=d.favoritos?.length ? d.favoritos.join(", "):"—";
+  document.getElementById("exp").innerText=d.explosivos?.length ? d.explosivos.join(", "):"—";
 
   e.target.value="";
 };
@@ -269,5 +228,4 @@ function reiniciar(){
 </script>
 
 </body>
-  </html>
-  
+</html>
