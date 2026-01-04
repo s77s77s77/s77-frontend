@@ -1,264 +1,175 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Sistema Premium S77</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sistema — Lotes de Números</title>
 
 <style>
-body{
-  font-family: Arial, sans-serif;
-  background: black;
-  color: #fff;
-  text-align: center;
-  padding: 20px;
-}
-.panel{
-  max-width: 520px;
-  margin: 15px auto;
-  padding: 15px;
-  border-radius: 12px;
-  background: black;
-}
-.hidden{ display:none }
-input,select,button{
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  margin:5px;
-}
-button{
-  background:maroon;
-  color:white;
-  font-weight:bold;
-}
-.inputs{
-  display:grid;
-  grid-template-columns:repeat(4,70px);
-  gap:12px;
-  justify-content:center;
-}
-.inputs input,
-.inputs5 input{
-  width:70px;
-  height:70px;
-  font-size:34px;
-  font-weight:bold;
-  text-align:center;
-  border:4px solid red;
-  background:white;
-  color:black;
-}
-.inputs5{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:10px;
-}
-.nuevo{
-  width:70px;
-  height:70px;
-  font-size:34px;
-  font-weight:bold;
-  text-align:center;
-  border:4px solid red;
-  background:#7fd3ff;
-}
-.favoritos{
-  background:green;
-  font-size:26px;
-  padding:15px;
-  border-radius:8px;
-}
-.explosivos{
-  background:red;
-  font-size:48px;
-  padding:15px;
-  border-radius:8px;
-}
-.totalBox input{
-  width:80px;
-  height:50px;
-  font-size:28px;
-  text-align:center;
-  border-radius:8px;
-}
+    body{
+        font-family: Arial, sans-serif;
+        background:#0f172a;
+        color:white;
+        margin:0;
+        padding:20px;
+    }
+
+    h2{
+        margin-top:25px;
+    }
+
+    .login-box{
+        background:#111827;
+        padding:15px;
+        border-radius:10px;
+        max-width:350px;
+    }
+
+    input{
+        width:100%;
+        padding:8px;
+        margin:6px 0;
+        border-radius:6px;
+        border:none;
+    }
+
+    button{
+        padding:8px 15px;
+        border:none;
+        border-radius:6px;
+        cursor:pointer;
+    }
+
+    .panel{
+        margin-top:25px;
+        padding:15px;
+        background:#020617;
+        border-radius:12px;
+    }
+
+    .grid{
+        display:grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap:8px;
+        margin-top:15px;
+    }
+
+    .cell{
+        background:#1e293b;
+        padding:12px;
+        text-align:center;
+        border-radius:10px;
+        font-size:18px;
+        min-height:35px;
+    }
+
+    .last5{
+        display:flex;
+        justify-content:center;
+        gap:10px;
+        margin-top:20px;
+    }
+
+    .hidden{
+        display:none;
+    }
 </style>
 </head>
 
 <body>
 
-<h1>🎡 Sistema Premium S77</h1>
+<!-- LOGIN -->
+<div class="login-box">
+    <h3>Ingreso al sistema</h3>
 
-<div class="panel" id="login">
-  <h2>INGRESAR CLAVE</h2>
-  <input id="clave">
-  <br>
-  <button onclick="login()">INGRESAR</button>
-  <p id="error" style="color:red;"></p>
+    <input type="text" id="user" placeholder="Usuario">
+    <input type="password" id="pass" placeholder="Contraseña">
+
+    <button onclick="entrar()">Ingresar</button>
+    <button onclick="crearUsuario()">Crear usuario</button>
 </div>
 
-<div class="panel hidden" id="admin">
-  <h2>ADMINISTRADOR</h2>
-  <input id="nuevaClave" placeholder="Clave usuario">
-  <select id="dias">
-    <option value="1">1 día</option>
-    <option value="7">7 días</option>
-    <option value="30">30 días</option>
-  </select>
-  <br>
-  <button onclick="crearUsuario()">CREAR USUARIO</button>
-</div>
+<!-- PANEL PRINCIPAL -->
+<div id="panel" class="panel hidden">
 
-<div class="panel hidden" id="s77">
+    <h2>Ingresar número</h2>
 
-  <h2>ÚLTIMOS NÚMEROS</h2>
+    <input type="number" id="numeroInput" placeholder="Escribe un número">
+    <button onclick="agregarNumero()">ENTER</button>
 
-  <div id="zonaNumeros">
+    <h3>ULTIMOS 16 NÚMEROS</h3>
 
-    <div class="inputs" id="vista16">
-      <input disabled><input disabled><input disabled><input disabled>
-      <input disabled><input disabled><input disabled><input disabled>
-      <input disabled><input disabled><input disabled><input disabled>
-      <input disabled><input disabled><input disabled><input disabled>
+    <div id="ultimos16" class="grid">
+        <!-- Casilleros creados dinámicamente -->
     </div>
 
-    <div class="inputs5 hidden" id="vista5">
-      <input disabled>
-      <input disabled>
-      <input disabled>
-      <input disabled>
-      <input disabled>
+    <div id="ultimos5Container" class="hidden">
+        <h3>ÚLTIMOS 5 NÚMEROS</h3>
+        <div id="ultimos5" class="last5"></div>
     </div>
-
-  </div>
-
-  <h3>NUEVO NÚMERO</h3>
-
-  <div style="display:flex; justify-content:center; gap:20px; align-items:flex-start;">
-    <div>
-      <input class="nuevo" id="nuevoNumero" type="number">
-      <br>
-      <button onclick="reiniciar()">REINICIAR</button>
-    </div>
-
-    <div class="totalBox">
-      <div><strong>TOTAL</strong></div>
-      <input id="total" disabled>
-      <br><br>
-      <div><strong>FICHAS</strong></div>
-      <input id="fichas" disabled>
-    </div>
-  </div>
-
-  <h3>FAVORITOS</h3>
-  <div class="favoritos" id="fav">—</div>
-
-  <h3>EXPLOSIVOS</h3>
-  <div class="explosivos" id="exp">—</div>
 
 </div>
 
 <script>
-const API = "https://s77-backend-1.onrender.com";
+let numeros = [];
 
-let ultimos = [];
-let adminClave = null;
-let totalAcumulado = 0;
-
-const cas16 = [...document.querySelectorAll("#vista16 input")];
-const cas5  = [...document.querySelectorAll("#vista5 input")];
-
-async function login(){
-  const clave = document.getElementById("clave").value;
-
-  const r = await fetch(API + "/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ clave })
-  });
-
-  const d = await r.json();
-
-  if (!d.ok) {
-    document.getElementById("error").innerText = d.error || "FORBIDDEN";
-    return;
-  }
-
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("s77").classList.remove("hidden");
-
-  if (d.admin) {
-    adminClave = clave;
-    document.getElementById("admin").classList.remove("hidden");
-  }
+function entrar(){
+    document.getElementById("panel").classList.remove("hidden");
 }
 
-async function crearUsuario(){
-  const nuevaClave = document.getElementById("nuevaClave").value;
-  const dias = document.getElementById("dias").value;
-
-  await fetch(API + "/crear-usuario", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ adminClave, nuevaClave, dias })
-  });
-
-  alert("Usuario creado");
+function crearUsuario(){
+    alert("Función de creación de usuario (la haremos más adelante).");
 }
 
-document.getElementById("nuevoNumero").onchange = async e => {
-  const v = parseInt(e.target.value);
-  if (isNaN(v)) return;
+function render16(){
+    const cont = document.getElementById("ultimos16");
+    cont.innerHTML = "";
 
-  ultimos.unshift(v);
-  if (ultimos.length > 16) ultimos.pop();
+    for(let i=0; i<16; i++){
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = numeros[i] !== undefined ? numeros[i] : "";
+        cont.appendChild(div);
+    }
+}
 
-  render();
+function render5(){
+    const cont = document.getElementById("ultimos5");
+    cont.innerHTML = "";
 
-  if (ultimos.length >= 16){
+    const ultimos5 = numeros.slice(-5);
 
-    const r = await fetch(API + "/calcular", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ultimos })
+    ultimos5.forEach(n=>{
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = n;
+        cont.appendChild(div);
     });
-
-    const d = await r.json();
-
-    // mostrar SIEMPRE lo que venga
-    document.getElementById("fav").innerText =
-      d.favoritos?.length ? d.favoritos.join(", ") : "—";
-
-    document.getElementById("exp").innerText =
-      d.explosivos?.length ? d.explosivos.join(", ") : "—";
-  }
-
-  e.target.value = "";
-};
-
-function render(){
-
-  cas16.forEach((c,i)=> c.value = ultimos[i] ?? "");
-
-  if (ultimos.length >= 16){
-
-    const vista16 = document.getElementById("vista16");
-    const vista5  = document.getElementById("vista5");
-
-    if (vista16) vista16.remove();
-
-    vista5.classList.remove("hidden");
-
-    const ult5 = ultimos.slice(0,5);
-    cas5.forEach((c,i)=> c.value = ult5[i] ?? "");
-  }
 }
 
-function reiniciar(){
-  location.reload();
+function agregarNumero(){
+    const valor = document.getElementById("numeroInput").value.trim();
+    if(valor === "") return;
+
+    numeros.push(valor);
+    document.getElementById("numeroInput").value = "";
+
+    if(numeros.length <= 16){
+        render16();
+    }
+
+    if(numeros.length === 16){
+        document.getElementById("ultimos16").classList.add("hidden");
+        document.getElementById("ultimos5Container").classList.remove("hidden");
+        render5();
+    }
+
+    if(numeros.length > 16){
+        render5();
+    }
 }
 </script>
 
 </body>
-    </html>
+  </html>
   
