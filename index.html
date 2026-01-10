@@ -3,81 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>Sistema Premium S77</title>
-
-<link rel="icon" href="icono.png">
-<link rel="apple-touch-icon" href="icono.png">
-
 <style>
-body{
-  font-family:Arial, sans-serif;
-  background:black;
-  color:#fff;
-  padding:20px;
-  text-align:center;
-}
-.panel{
-  background:black;
-  color:#fff;
-  padding:15px;
-  border-radius:12px;
-  max-width:480px;
-  margin:15px auto;
-}
-input, button{
-  padding:10px;
-  border-radius:8px;
-  border:none;
-}
-button{
-  cursor:pointer;
-  margin-top:10px;
-  font-weight:bold;
-  background:maroon;
-  color:white;
-}
-.inputs{
-  display:grid;
-  grid-template-columns:repeat(4,70px);
-  gap:12px;
-  justify-content:center;
-}
-.inputs input{
-  width:70px;
-  height:70px;
-  font-size:34px;
-  font-weight:bold;
-  text-align:center;
-  border:4px solid red;
-}
-.nuevo-cuadrado{
-  width:70px;
-  height:70px;
-  font-size:34px;
-  font-weight:bold;
-  text-align:center;
-  border:4px solid red;
-  background:#7fd3ff;
-}
-.favoritos,.explosivos{
-  width:220px;
-  min-height:60px;
-  padding:15px;
-  border-radius:8px;
-  font-weight:bold;
-  margin:0 auto;
-  border:4px solid white;
-}
-.favoritos{background:green;}
-.explosivos{background:red;font-size:48px;}
+body{background:black;color:white;font-family:Arial;text-align:center}
+.inputs{display:grid;grid-template-columns:repeat(4,70px);gap:10px;justify-content:center}
+.inputs input,.box{width:70px;height:70px;font-size:32px;text-align:center;font-weight:bold}
+.box{background:#7fd3ff;border:4px solid red}
+.favoritos{background:green;padding:10px}
+.explosivos{background:red;padding:10px;font-size:40px}
 </style>
 </head>
-
 <body>
 
-<h1>🎡 Sistema Premium S77</h1>
-
-<div class="panel">
-<h2>ÚLTIMOS 16 NÚMEROS</h2>
+<h2>ÚLTIMOS 16</h2>
 <div class="inputs">
 <input disabled><input disabled><input disabled><input disabled>
 <input disabled><input disabled><input disabled><input disabled>
@@ -86,76 +23,47 @@ button{
 </div>
 
 <h3>NUEVO NÚMERO</h3>
-<div style="display:flex;justify-content:center;gap:20px;align-items:center;">
-<input id="nuevoNumero" type="number" class="nuevo-cuadrado">
+<div style="display:flex;justify-content:center;gap:20px">
+<input id="nuevo" class="box" type="number">
 <div>
-<div style="font-weight:bold;">FICHAS</div>
-<input id="fichas" class="nuevo-cuadrado" value="1" disabled>
+<div>FICHAS</div>
+<input id="fichas" class="box" value="1" disabled>
 </div>
 </div>
-
-<button id="reiniciar">REINICIAR</button>
 
 <h3>FAVORITOS</h3>
-<div class="favoritos" id="favoritos">—</div>
+<div id="fav" class="favoritos">—</div>
 
 <h3>EXPLOSIVOS</h3>
-<div class="explosivos" id="explosivos">—</div>
-</div>
+<div id="exp" class="explosivos">—</div>
 
 <script>
-const lotes3=[
-[0,13,28],[1,18,36],[1,25,34],[2,10,35],[2,10,22],
-[3,18,19],[4,10,22],[6,17,28],[7,19,27],
-[7,9,32],[8,33,28],[8,26,35],[9,14,30],
-[9,1,30],[9,25,36],[10,26,24],[11,22,33],
-[17,20,35],[7,3,30]
-];
-
-const lotes4=[
-[3,18,24,26],[4,11,15,29],[5,12,16,21],
-[6,10,13,31],[14,23,25,16]
-];
+const lotes3=[[0,13,28],[1,18,36]];
+const lotes4=[[3,18,24,26]];
 
 const cas=[...document.querySelectorAll('.inputs input')];
-const nuevo=document.getElementById('nuevoNumero');
-const fav=document.getElementById('favoritos');
-const exp=document.getElementById('explosivos');
+const nuevo=document.getElementById('nuevo');
+const fav=document.getElementById('fav');
+const exp=document.getElementById('exp');
 const fichasInput=document.getElementById('fichas');
-const rein=document.getElementById('reiniciar');
 
 let ultimos=[];
 let acumulado=0;
 let sistemaActivo=false;
+let aciertosRegistrados=new Set();
 
 nuevo.onchange=()=>{
   const v=parseInt(nuevo.value);
   if(isNaN(v)) return;
 
   ultimos.unshift(v);
+  if(ultimos.length>16) ultimos.pop();
 
-  if(ultimos.length===17){
-    ultimos.pop();
-    sistemaActivo=true;
-    acumulado=0;
-    fichasInput.value=1;
-  }else if(ultimos.length>16){
-    ultimos.pop();
-  }
+  if(ultimos.length===16) sistemaActivo=true;
 
   render();
   if(sistemaActivo) calcular();
   nuevo.value="";
-};
-
-rein.onclick=()=>{
-  ultimos=[];
-  sistemaActivo=false;
-  acumulado=0;
-  fichasInput.value=1;
-  render();
-  fav.innerText="—";
-  exp.innerText="—";
 };
 
 function render(){
@@ -164,45 +72,46 @@ function render(){
 
 function calcular(){
   let cnt={},presentes=[...new Set(ultimos)];
-  let acierto=false;
+  let nuevoAcierto=false;
 
   const sumar=n=>cnt[n]=(cnt[n]||0)+1;
 
-  // LOTES DE 3 → 3 COMPLETA
-  lotes3.forEach(l=>{
+  lotes3.forEach((l,i)=>{
     let p=l.filter(n=>presentes.includes(n));
-    if(p.length===3) acierto=true;
+    if(p.length===3 && !aciertosRegistrados.has("3-"+i)){
+      aciertosRegistrados.add("3-"+i);
+      nuevoAcierto=true;
+    }
     if(p.length===2) sumar(l.find(n=>!p.includes(n)));
   });
 
-  // LOTES DE 4 → 3 COMPLETA (REGLA CORRECTA)
-  lotes4.forEach(l=>{
+  lotes4.forEach((l,i)=>{
     let p=l.filter(n=>presentes.includes(n));
-    if(p.length===3) acierto=true;
+    if(p.length===3 && !aciertosRegistrados.has("4-"+i)){
+      aciertosRegistrados.add("4-"+i);
+      nuevoAcierto=true;
+    }
     if(p.length===2){
       l.filter(n=>!p.includes(n)).forEach(sumar);
     }
   });
 
   let f=[],e=[];
-  for(let n in cnt){
-    cnt[n]>1 ? e.push(n) : f.push(n);
-  }
+  for(let n in cnt) cnt[n]>1?e.push(n):f.push(n);
 
   fav.innerText=f.length?f.join(", "):"—";
   exp.innerText=e.length?e.join(", "):"—";
 
-  if(acierto){
+  if(nuevoAcierto){
     acumulado=0;
     fichasInput.value=1;
     return;
   }
 
-  acumulado += f.length + e.length;
-  fichasInput.value = Math.floor(acumulado/25)+1;
+  acumulado+=f.length+e.length;
+  fichasInput.value=Math.floor(acumulado/25)+1;
 }
 </script>
 
 </body>
-  </html>
-  
+</html>
