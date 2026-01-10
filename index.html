@@ -95,7 +95,7 @@ button{
 
 <h1>🎡 Sistema Premium S77</h1>
 
-<div class="panel hidden" id="s77">
+<div class="panel" id="s77">
   <h2>ÚLTIMOS 16 NÚMEROS</h2>
   <div class="inputs">
     <input disabled><input disabled><input disabled><input disabled>
@@ -148,24 +148,37 @@ const fichasInput=document.getElementById('fichas');
 
 let ultimos=[];
 let acumuladoFichas=0;
-
-document.getElementById("s77").classList.remove("hidden");
+let sistemaActivo=false;
 
 nuevo.onchange=()=>{
   const v=parseInt(nuevo.value);
   if(isNaN(v)) return;
 
   ultimos.unshift(v);
-  if(ultimos.length>16) ultimos.pop();
+
+  // Activar sistema SOLO al ingresar el número 17
+  if(ultimos.length === 17){
+    ultimos.pop(); // mantener solo 16
+    sistemaActivo = true;
+    acumuladoFichas = 0;
+    fichasInput.value = 1;
+  } else if(ultimos.length > 16){
+    ultimos.pop();
+  }
 
   render();
-  calcular();
+
+  if(sistemaActivo){
+    calcular();
+  }
+
   nuevo.value="";
 };
 
 rein.onclick=()=>{
   ultimos=[];
   acumuladoFichas=0;
+  sistemaActivo=false;
   fichasInput.value=1;
   render();
   fav.innerText="—";
@@ -205,12 +218,10 @@ function calcular(){
   fav.innerText=f.length?f.join(", "):"—";
   exp.innerText=e.length?e.join(", "):"—";
 
-  // ===== FICHAS ACUMULATIVAS =====
   acumuladoFichas += (f.length + e.length);
   fichasInput.value = Math.floor(acumuladoFichas / 25) + 1;
 }
 </script>
 
 </body>
-  </html>
-  
+</html>
