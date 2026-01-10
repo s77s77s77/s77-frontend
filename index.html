@@ -3,18 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <title>Sistema Premium S77</title>
+
+<link rel="icon" href="icono.png">
+<link rel="apple-touch-icon" href="icono.png">
+
 <style>
-body{background:black;color:white;font-family:Arial;text-align:center}
-.inputs{display:grid;grid-template-columns:repeat(4,70px);gap:10px;justify-content:center}
-.inputs input,.box{width:70px;height:70px;font-size:32px;text-align:center;font-weight:bold}
-.box{background:#7fd3ff;border:4px solid red}
-.favoritos{background:green;padding:10px}
-.explosivos{background:red;padding:10px;font-size:40px}
+body{
+  font-family:Arial, sans-serif;
+  background:black;
+  color:#fff;
+  padding:20px;
+  text-align:center;
+}
+.panel{
+  background:black;
+  color:#fff;
+  padding:15px;
+  border-radius:12px;
+  max-width:480px;
+  margin:15px auto;
+}
+.hidden{display:none;}
+input, select, button{
+  padding:10px;
+  font-family:Arial, sans-serif;
+  border-radius:8px;
+  border:none;
+}
+button{
+  cursor:pointer;
+  margin-top:10px;
+  text-transform:uppercase;
+  font-weight:bold;
+  color:#fff;
+  background:maroon;
+}
+.inputs{
+  display:grid;
+  grid-template-columns:repeat(4,70px);
+  gap:12px;
+  justify-content:center;
+}
+.inputs input{
+  width:70px;
+  height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  background:white;
+  color:black;
+}
+.inputs input:first-child{
+  background:#7fd3ff;
+}
+.nuevo-cuadrado{
+  width:70px;
+  height:70px;
+  font-size:34px;
+  font-weight:bold;
+  text-align:center;
+  border:4px solid red;
+  margin:10px auto;
+  display:block;
+  border-radius:8px;
+  background:#7fd3ff;
+}
+.favoritos, .explosivos{
+  width:220px;
+  min-height:60px;
+  padding:15px;
+  border-radius:8px;
+  display:block;
+  font-weight:bold;
+  text-align:center;
+  margin:0 auto;
+  border:4px solid white;
+}
+.favoritos{
+  background:green;
+  font-size:26px;
+}
+.explosivos{
+  background:red;
+  font-size:48px;
+}
 </style>
 </head>
+
 <body>
 
-<h2>ÚLTIMOS 16</h2>
+<h1>🎡 Sistema Premium S77</h1>
+
+<!-- LOGIN -->
+<div class="panel" id="login">
+  <h2>INGRESAR CLAVE</h2>
+  <input id="claveInput" placeholder="Clave">
+  <br>
+  <button onclick="login()">Ingresar</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- SISTEMA -->
+<div class="panel hidden" id="s77">
+
+<h2>ÚLTIMOS 16 NÚMEROS</h2>
 <div class="inputs">
 <input disabled><input disabled><input disabled><input disabled>
 <input disabled><input disabled><input disabled><input disabled>
@@ -23,34 +116,63 @@ body{background:black;color:white;font-family:Arial;text-align:center}
 </div>
 
 <h3>NUEVO NÚMERO</h3>
-<div style="display:flex;justify-content:center;gap:20px">
-<input id="nuevo" class="box" type="number">
-<div>
-<div>FICHAS</div>
-<input id="fichas" class="box" value="1" disabled>
+<div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+  <input id="nuevoNumero" type="number" class="nuevo-cuadrado">
+  <div>
+    <div style="font-weight:bold;">FICHAS</div>
+    <input id="fichas" class="nuevo-cuadrado" value="1" disabled>
+  </div>
 </div>
-</div>
+
+<button id="reiniciar">REINICIAR</button>
 
 <h3>FAVORITOS</h3>
-<div id="fav" class="favoritos">—</div>
+<div class="favoritos" id="favoritos">—</div>
 
 <h3>EXPLOSIVOS</h3>
-<div id="exp" class="explosivos">—</div>
+<div class="explosivos" id="explosivos">—</div>
+</div>
 
 <script>
-const lotes3=[[0,13,28],[1,18,36]];
-const lotes4=[[3,18,24,26]];
+// ===== LOGIN =====
+const ADMIN="ADMIN-1407";
+let usuarios=JSON.parse(localStorage.getItem("usuarios")||"{}");
+
+function login(){
+  const clave=document.getElementById("claveInput").value;
+  if(clave===ADMIN || usuarios[clave]){
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("s77").classList.remove("hidden");
+  }else{
+    document.getElementById("error").innerText="Clave inválida";
+  }
+}
+
+// ===== S77 =====
+const lotes3=[
+[0,13,28],[1,18,36],[1,25,34],[2,10,35],[2,10,22],
+[3,18,19],[4,10,22],[6,17,28],[7,19,27],
+[7,9,32],[8,33,28],[8,26,35],[9,14,30],
+[9,1,30],[9,25,36],[10,26,24],[11,22,33],
+[17,20,35],[7,3,30]
+];
+
+const lotes4=[
+[3,18,24,26],[4,11,15,29],[5,12,16,21],
+[6,10,13,31],[14,23,25,16]
+];
 
 const cas=[...document.querySelectorAll('.inputs input')];
-const nuevo=document.getElementById('nuevo');
-const fav=document.getElementById('fav');
-const exp=document.getElementById('exp');
+const nuevo=document.getElementById('nuevoNumero');
+const fav=document.getElementById('favoritos');
+const exp=document.getElementById('explosivos');
 const fichasInput=document.getElementById('fichas');
+const rein=document.getElementById('reiniciar');
 
 let ultimos=[];
-let acumulado=0;
 let sistemaActivo=false;
-let aciertosRegistrados=new Set();
+let acumulado=0;
+let aciertos=new Set();
 
 nuevo.onchange=()=>{
   const v=parseInt(nuevo.value);
@@ -59,11 +181,26 @@ nuevo.onchange=()=>{
   ultimos.unshift(v);
   if(ultimos.length>16) ultimos.pop();
 
-  if(ultimos.length===16) sistemaActivo=true;
+  if(ultimos.length===16 && !sistemaActivo){
+    sistemaActivo=true;
+    acumulado=0;
+    fichasInput.value=1;
+  }
 
   render();
   if(sistemaActivo) calcular();
   nuevo.value="";
+};
+
+rein.onclick=()=>{
+  ultimos=[];
+  sistemaActivo=false;
+  acumulado=0;
+  aciertos.clear();
+  fichasInput.value=1;
+  render();
+  fav.innerText="—";
+  exp.innerText="—";
 };
 
 function render(){
@@ -78,8 +215,8 @@ function calcular(){
 
   lotes3.forEach((l,i)=>{
     let p=l.filter(n=>presentes.includes(n));
-    if(p.length===3 && !aciertosRegistrados.has("3-"+i)){
-      aciertosRegistrados.add("3-"+i);
+    if(p.length===3 && !aciertos.has("3-"+i)){
+      aciertos.add("3-"+i);
       nuevoAcierto=true;
     }
     if(p.length===2) sumar(l.find(n=>!p.includes(n)));
@@ -87,8 +224,8 @@ function calcular(){
 
   lotes4.forEach((l,i)=>{
     let p=l.filter(n=>presentes.includes(n));
-    if(p.length===3 && !aciertosRegistrados.has("4-"+i)){
-      aciertosRegistrados.add("4-"+i);
+    if(p.length===3 && !aciertos.has("4-"+i)){
+      aciertos.add("4-"+i);
       nuevoAcierto=true;
     }
     if(p.length===2){
@@ -97,7 +234,9 @@ function calcular(){
   });
 
   let f=[],e=[];
-  for(let n in cnt) cnt[n]>1?e.push(n):f.push(n);
+  for(let n in cnt){
+    cnt[n]>1 ? e.push(n) : f.push(n);
+  }
 
   fav.innerText=f.length?f.join(", "):"—";
   exp.innerText=e.length?e.join(", "):"—";
@@ -114,4 +253,5 @@ function calcular(){
 </script>
 
 </body>
-</html>
+  </html>
+  
